@@ -846,18 +846,21 @@ def tela_login():
     </style>
     """, unsafe_allow_html=True)
 
-    # ✅ CAIXA VISUAL (faltava isso)
-    
+    # CARD
     st.markdown("""
     <div class="login-box">
-    <div class="logo">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
-    </div>
-    <div class="titulo">Design for Quality</div>
-    <div class="subtitulo">Sistema de Qualidade</div>
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
+        </div>
+        <div class="titulo">Design for Quality</div>
+        <div class="subtitulo">Sistema de Qualidade</div>
     </div>
     """, unsafe_allow_html=True)
-    
+
+
+    # ✅ FORMULÁRIO (ESSA PARTE FALTAVA)
+    col1, col2, col3 = st.columns([3,4,3])
+
     with col2:
         with st.form("login"):
             user = st.text_input("Usuário REDE VW")
