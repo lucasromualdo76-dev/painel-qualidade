@@ -1066,7 +1066,7 @@ def painel():
         import plotly.graph_objects as go
 
         # ✅ LER EXCEL
-        df = pd.read_excel("dados_rodagem.xlsx")
+        df = pd.read_csv("dados_rodagem.csv")
 
         # ✅ LIMPAR COLUNAS
         df.columns = df.columns.str.strip()
