@@ -1060,7 +1060,6 @@ def painel():
 
         botao_voltar()
 
-        st.title("QA Protótipo")
         st.subheader("Status Liberações ZP8/Rodagem 2026")
 
         import plotly.graph_objects as go
