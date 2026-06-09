@@ -857,7 +857,19 @@ def tela_login():
     <div class="subtitulo">Sistema de Qualidade</div>
     </div>
     """, unsafe_allow_html=True)
+    
+    with col2:
+        with st.form("login"):
+            user = st.text_input("Usuário REDE VW")
+            pwd = st.text_input("Senha", type="password")
 
+            if st.form_submit_button("Entrar"):
+                if user.lower() in USUARIOS and USUARIOS[user.lower()] == pwd:
+                    st.session_state.logado = True
+                    st.session_state.usuario = user.lower()
+                    st.rerun()
+                else:
+                    st.error("Usuário ou senha inválidos")
 
 def pagina_links_ferramentas():
     st.subheader("🔗 Links e Ferramentas do Dia a Dia")
