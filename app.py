@@ -814,7 +814,7 @@ def tela_login():
     .login-box {
         width: 320px;
         margin: auto;
-        margin-top: 20px;
+        margin-top: 60px;
         padding: 20px;
         border-radius: 12px;
 
@@ -846,19 +846,20 @@ def tela_login():
     </style>
     """, unsafe_allow_html=True)
 
-    # CARD
+    # ✅ CAIXA VISUAL (faltava isso)
+    
     st.markdown("""
     <div class="login-box">
-        <div class="logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
-        </div>
-        <div class="titulo">Design for Quality</div>
-        <div class="subtitulo">Sistema de Qualidade</div>
+    <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
+    </div>
+    <div class="titulo">Design for Quality</div>
+    <div class="subtitulo">Sistema de Qualidade</div>
     </div>
     """, unsafe_allow_html=True)
 
 
-    # ✅ FORMULÁRIO (ESSA PARTE FALTAVA)
+    # ✅ FORM LOGIN (mantém funcional)
     col1, col2, col3 = st.columns([3,4,3])
 
     with col2:
@@ -873,6 +874,7 @@ def tela_login():
                     st.rerun()
                 else:
                     st.error("Usuário ou senha inválidos")
+
 
 def pagina_links_ferramentas():
     st.subheader("🔗 Links e Ferramentas do Dia a Dia")
@@ -989,9 +991,6 @@ def painel():
     st.title("Design for Quality")
     mostrar_carrinho_animado_painel()
 
-    # ======================
-    # STATES
-    # ======================
     if "pagina_atual" not in st.session_state:
         st.session_state.pagina_atual = "HOME"
 
@@ -1001,7 +1000,7 @@ def painel():
     pagina = st.session_state.pagina_atual
 
     # ======================
-    # CSS
+    # CSS DOS CARDS
     # ======================
     st.markdown("""
     <style>
@@ -1019,21 +1018,14 @@ def painel():
     .card-black {background: linear-gradient(135deg, #444, #000); color: white;}
 
     .titulo {font-size: 13px; font-weight: bold;}
-
-    .status {
-        position: absolute;
-        bottom: 10px;
-        left: 12px;
-        font-size: 12px;
-    }
-
+    .status {position:absolute; bottom:10px; left:12px; font-size:12px;}
     .letra {
-        position: absolute;
-        right: 10px;
-        bottom: 0px;
-        font-size: 80px;
-        color: rgba(255,255,255,0.15);
-        font-weight: bold;
+        position:absolute;
+        right:10px;
+        bottom:0px;
+        font-size:80px;
+        color:rgba(255,255,255,0.15);
+        font-weight:bold;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1045,8 +1037,9 @@ def painel():
 
         st.markdown("## 🏠 Módulos do Sistema")
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
 
+        # BLOQUEADO
         with col1:
             st.markdown("""
             <div class="card card-locked">
@@ -1056,7 +1049,7 @@ def painel():
             </div>
             """, unsafe_allow_html=True)
 
-        # ✅ KPM
+        # KPM
         with col2:
             st.markdown("""
             <div class="card card-black">
@@ -1070,7 +1063,7 @@ def painel():
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
 
-        # ✅ GMP21
+        # GMP21
         with col3:
             st.markdown("""
             <div class="card card-red">
@@ -1085,7 +1078,7 @@ def painel():
                 st.session_state.subpagina = None
                 st.rerun()
 
-        # ✅ STATUS
+        # STATUS
         with col4:
             st.markdown("""
             <div class="card card-blue">
@@ -1099,71 +1092,90 @@ def painel():
                 st.session_state.pagina_atual = "STATUS"
                 st.rerun()
 
+        # ENTREGA
+        with col5:
+            st.markdown("""
+            <div class="card card-black">
+                <div class="titulo">Entrega DFQ</div>
+                <div class="status">Acessar</div>
+                <div class="letra">D</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button("", key="entrega"):
+                st.session_state.pagina_atual = "ENTREGA"
+                st.rerun()
+
     # ======================
-    # GMP21 (CAMADAS)
+    # ENTREGA DFQ
     # ======================
-    elif pagina == "GMP21":
+    elif pagina == "ENTREGA":
 
         botao_voltar()
-        st.subheader("📊 GMP21 Budget")
 
-        col1, col2, col3 = st.columns(3)
+        st.title("QA Protótipo")
+        st.subheader("Status Liberações ZP8/Rodagem 2026")
+
+        import plotly.graph_objects as go
+
+        meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+        prevista = [13,19,14,10,4,3,0,0,0,0,0,0]
+        liberados = [13,19,16,7,4,0,11,10,11,10,13,5]
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Bar(
+            name="Rodagem Prevista",
+            x=meses,
+            y=prevista,
+            text=[v if v != 0 else "" for v in prevista],
+            textposition="outside"
+        ))
+
+        fig.add_trace(go.Bar(
+            name="Veículos Liberados",
+            x=meses,
+            y=liberados,
+            text=[v if v != 0 else "" for v in liberados],
+            textposition="outside"
+        ))
+
+        fig.update_layout(
+            barmode='group',
+            title="Performance até Maio | Total de 59 veículos liberados"
+        )
+
+        col1, col2 = st.columns([3,1])
 
         with col1:
-            if st.button("🔎 Consulta de Milestone (GMP21)"):
-                st.session_state.subpagina = "INPUT"
+            st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            if st.button("🔎 Consulta"):
-                st.session_state.subpagina = "CONSULTA"
-
-        with col3:
-            if st.button("📈 Lançar Budget"):
-                st.session_state.subpagina = "LANCAR"
-
-        st.divider()
-
-        if st.session_state.subpagina == "INPUT":
-            pagina_input_budget_gmp21()
-
-        elif st.session_state.subpagina == "CONSULTA":
-            st.write("🔎 Tela de consulta")
-
-        elif st.session_state.subpagina == "LANCAR":
-            st.write("📊 Tela de lançamento")
+            st.markdown("### Programas Avaliados")
+            st.markdown("""
+            - VW247 Udara PLAT AGT  
+            - VW247 Udara HUT AGT  
+            - VW246 SSA South Africa Entry  
+            - PL8 STEP III – TCROSS  
+            - AQ300 GEN2 MQB27 Export  
+            - M0B37W SAGA – AGT PHASE  
+            - NIVUS GTS ARGENTINA  
+            """)
 
     # ======================
-    # KPM
+    # OUTROS
     # ======================
-    
-          
-    
-    elif pagina == "KPM":
-        
+    elif pagina == "GMP21":
         botao_voltar()
+        st.subheader("GMP21 Budget")
 
+    elif pagina == "KPM":
+        botao_voltar()
         st.subheader("Dashboard KPM")
 
-        st.markdown("Clique no botão abaixo para abrir a dashboard:")
-
-        st.link_button(
-        "Abrir Dashboard KPM",
-        "https://app.powerbi.com/groups/me/reports/83d1d876-e1f8-487c-a8a1-9c8bfa748248/626e61e2b64a568d9e88?experience=power-bi"
-    )
-
-
-
-
-    # ======================
-    # STATUS
-    # ======================
     elif pagina == "STATUS":
-
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
-
-    # ======================
-
 
 
 # =========================================
