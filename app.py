@@ -87,6 +87,7 @@ USUARIOS = {
     "aannutb": "12345",
     "ufcmart": "12345",
     "vyplfbt": "12345",
+    "gibvvr7": "12345",
     "admin": "admin"
 }
 
@@ -1004,29 +1005,16 @@ def painel():
     # ======================
     st.markdown("""
     <style>
-    .card {
-        height: 130px;
-        border-radius: 12px;
-        padding: 12px;
-        position: relative;
-        box-shadow: 0px 6px 15px rgba(0,0,0,0.2);
-    }
-
+    .card {height: 130px; border-radius: 12px; padding: 12px; position: relative;
+           box-shadow: 0px 6px 15px rgba(0,0,0,0.2);}
     .card-locked {background: #d1d5db; color: #555;}
-    .card-red {background: linear-gradient(135deg, #e53935, #8e0000); color: white;}
-    .card-blue {background: linear-gradient(135deg, #64b5f6, #1565c0); color: white;}
-    .card-black {background: linear-gradient(135deg, #444, #000); color: white;}
-
+    .card-red {background: linear-gradient(135deg, #e53935, #8e0000); color:white;}
+    .card-blue {background: linear-gradient(135deg, #64b5f6, #1565c0); color:white;}
+    .card-black {background: linear-gradient(135deg, #444, #000); color:white;}
     .titulo {font-size: 13px; font-weight: bold;}
     .status {position:absolute; bottom:10px; left:12px; font-size:12px;}
-    .letra {
-        position:absolute;
-        right:10px;
-        bottom:0px;
-        font-size:80px;
-        color:rgba(255,255,255,0.15);
-        font-weight:bold;
-    }
+    .letra {position:absolute; right:10px; bottom:0px; font-size:80px;
+            color:rgba(255,255,255,0.15); font-weight:bold;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -1036,72 +1024,31 @@ def painel():
     if pagina == "HOME":
 
         st.markdown("## 🏠 Módulos do Sistema")
-
         col1, col2, col3, col4, col5 = st.columns(5)
 
-        # BLOQUEADO
         with col1:
-            st.markdown("""
-            <div class="card card-locked">
-                <div class="titulo">Módulo X</div>
-                <div class="status">Acesso Negado</div>
-                <div class="letra">X</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
 
-        # KPM
         with col2:
-            st.markdown("""
-            <div class="card card-black">
-                <div class="titulo">KPM</div>
-                <div class="status">Acessar</div>
-                <div class="letra">K</div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown("<div class='card card-black'>KPM</div>", unsafe_allow_html=True)
             if st.button("", key="kpm"):
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
 
-        # GMP21
         with col3:
-            st.markdown("""
-            <div class="card card-red">
-                <div class="titulo">GMP21 Budget</div>
-                <div class="status">Acessar</div>
-                <div class="letra">G</div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown("<div class='card card-red'>GMP21</div>", unsafe_allow_html=True)
             if st.button("", key="gmp21"):
                 st.session_state.pagina_atual = "GMP21"
-                st.session_state.subpagina = None
                 st.rerun()
 
-        # STATUS
         with col4:
-            st.markdown("""
-            <div class="card card-blue">
-                <div class="titulo">Custo Médio Reparo</div>
-                <div class="status">Acessar</div>
-                <div class="letra">S</div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown("<div class='card card-blue'>STATUS</div>", unsafe_allow_html=True)
             if st.button("", key="status"):
                 st.session_state.pagina_atual = "STATUS"
                 st.rerun()
 
-        # ENTREGA
         with col5:
-            st.markdown("""
-            <div class="card card-black">
-                <div class="titulo">Entrega DFQ</div>
-                <div class="status">Acessar</div>
-                <div class="letra">D</div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
             if st.button("", key="entrega"):
                 st.session_state.pagina_atual = "ENTREGA"
                 st.rerun()
@@ -1118,17 +1065,34 @@ def painel():
 
         import plotly.graph_objects as go
 
-        meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
-        prevista = [13,19,14,10,4,3,0,0,0,0,0,0]
-        liberados = [13,19,16,7,4,0,11,10,11,10,13,5]
+        # ✅ LER EXCEL
+        df = pd.read_excel("dados_rodagem.xlsx")
 
+        # ✅ LIMPAR COLUNAS
+        df.columns = df.columns.str.strip()
+        df.columns = ["Mes", "Prevista", "Liberados"]
+
+        # ✅ LISTAS
+        meses = df["Mes"].tolist()
+        prevista = df["Prevista"].tolist()
+        liberados = df["Liberados"].tolist()
+
+        # ✅ TRATAR VAZIOS
+        
+        
+        prevista = [int(v) if pd.notna(v) else None for v in prevista]
+        liberados = [int(v) if pd.notna(v) else None for v in liberados]
+
+
+
+        # ✅ GRÁFICO
         fig = go.Figure()
 
         fig.add_trace(go.Bar(
             name="Rodagem Prevista",
             x=meses,
             y=prevista,
-            text=[v if v != 0 else "" for v in prevista],
+            text=[v if v else "" for v in prevista],
             textposition="outside"
         ))
 
@@ -1136,13 +1100,20 @@ def painel():
             name="Veículos Liberados",
             x=meses,
             y=liberados,
-            text=[v if v != 0 else "" for v in liberados],
+            text=[v if v else "" for v in liberados],
             textposition="outside"
         ))
 
         fig.update_layout(
             barmode='group',
-            title="Performance até Maio | Total de 59 veículos liberados"
+            title="Performance 2026 | Total de veículos liberados",
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
         )
 
         col1, col2 = st.columns([3,1])
@@ -1151,6 +1122,32 @@ def painel():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
+
+            total_prevista = sum(v for v in prevista if v is not None)
+            total_liberados = sum(v for v in liberados if v is not None)
+
+            st.markdown("### 📊 Totais")
+
+            st.markdown(f"""
+            <div style="margin-bottom:20px;">
+                <div style="color:#90CAF9;">Rodagem Prevista</div>
+                <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+                    {total_prevista}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div style="margin-bottom:20px;">
+                <div style="color:#1E88E5;">Veículos Liberados</div>
+                <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
+                    {total_liberados}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("---")
+
             st.markdown("### Programas Avaliados")
             st.markdown("""
             - VW247 Udara PLAT AGT  
