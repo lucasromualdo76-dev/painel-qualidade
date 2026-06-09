@@ -1049,14 +1049,14 @@ def painel():
 
         with col5:
             st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
-            if st.button("", key="entrega"):
-                st.session_state.pagina_atual = "ENTREGA"
+            if st.button("", key="entrega veiculos QA"):
+                st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                 st.rerun()
 
     # ======================
     # ENTREGA DFQ
     # ======================
-    elif pagina == "ENTREGA":
+    elif pagina == "ENTREGA VEICULOS QA":
 
         botao_voltar()
 
