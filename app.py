@@ -814,7 +814,7 @@ def tela_login():
     .login-box {
         width: 320px;
         margin: auto;
-        margin-top: 60px;
+        margin-top: 20px;
         padding: 20px;
         border-radius: 12px;
 
