@@ -807,18 +807,56 @@ e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
 # LOGIN
 # ======================================================
 def tela_login():
-    col1, col2, col3 = st.columns([3, 4, 3])
-    with col2:
-        with st.form("login"):
-            user = st.text_input("Usuário REDE VW")
-            pwd = st.text_input("Senha", type="password")
-            if st.form_submit_button("Entrar"):
-                if user.lower() in USUARIOS and USUARIOS[user.lower()] == pwd:
-                    st.session_state.logado = True
-                    st.session_state.usuario = user.lower()
-                    st.rerun()
-                else:
-                    st.error("Usuário ou senha inválidos")
+
+    # CSS
+    st.markdown("""
+    <style>
+    .login-box {
+        width: 320px;
+        margin: auto;
+        margin-top: 60px;
+        padding: 20px;
+        border-radius: 12px;
+
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.25);
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .titulo {
+        font-size: 22px;
+        font-weight: bold;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 15px;
+    }
+
+    .logo img {
+        width: 45px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ✅ CAIXA VISUAL (faltava isso)
+    
+    st.markdown("""
+    <div class="login-box">
+    <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
+    </div>
+    <div class="titulo">Design for Quality</div>
+    <div class="subtitulo">Sistema de Qualidade</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def pagina_links_ferramentas():
