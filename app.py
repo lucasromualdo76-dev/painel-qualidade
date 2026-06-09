@@ -1056,7 +1056,7 @@ def painel():
     # ======================
     # ENTREGA DFQ
     # ======================
-    elif pagina == "ENTREGA":
+    elif pagina == "CONTROLE DE ENTREGA VEICULOS QA":
 
         botao_voltar()
 
