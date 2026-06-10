@@ -1095,81 +1095,79 @@ elif pagina == "ENTREGA VEICULOS QA":
     prevista = [int(v) if pd.notna(v) else None for v in prevista]
     liberados = [int(v) if pd.notna(v) else None for v in liberados]
 
+    # ✅ GRÁFICO
+    fig = go.Figure()
 
+    fig.add_trace(go.Bar(
+        name="Rodagem Prevista",
+        x=meses,
+        y=prevista,
+        text=[v if v else "" for v in prevista],
+        textposition="outside"
+    ))
 
-        # ✅ GRÁFICO
-        fig = go.Figure()
+    fig.add_trace(go.Bar(
+        name="Veículos Liberados",
+        x=meses,
+        y=liberados,
+        text=[v if v else "" for v in liberados],
+        textposition="outside"
+    ))
 
-        fig.add_trace(go.Bar(
-            name="Rodagem Prevista",
-            x=meses,
-            y=prevista,
-            text=[v if v else "" for v in prevista],
-            textposition="outside"
-        ))
-
-        fig.add_trace(go.Bar(
-            name="Veículos Liberados",
-            x=meses,
-            y=liberados,
-            text=[v if v else "" for v in liberados],
-            textposition="outside"
-        ))
-
-        fig.update_layout(
-            barmode='group',
-            title="Performance 2026 | Total de veículos liberados",
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.2,
-                xanchor="center",
-                x=0.5
-            )
+    fig.update_layout(
+        barmode='group',
+        title="Performance 2026 | Total de veículos liberados",
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
         )
+    )
 
-        col1, col2 = st.columns([3,1])
+    col1, col2 = st.columns([3,1])
 
-        with col1:
-            st.plotly_chart(fig, use_container_width=True)
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
+    with col2:
 
-            total_prevista = sum(v for v in prevista if v is not None)
-            total_liberados = sum(v for v in liberados if v is not None)
+        total_prevista = sum(v for v in prevista if v is not None)
+        total_liberados = sum(v for v in liberados if v is not None)
 
-            st.markdown("### 📊 Totais")
+        st.markdown("### 📊 Totais")
 
-            st.markdown(f"""
-            <div style="margin-bottom:20px;">
-                <div style="color:#90CAF9;">Rodagem Prevista</div>
-                <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
-                    {total_prevista}
-                </div>
+        st.markdown(f"""
+        <div style="margin-bottom:20px;">
+            <div style="color:#90CAF9;">Rodagem Prevista</div>
+            <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+                {total_prevista}
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div style="margin-bottom:20px;">
-                <div style="color:#1E88E5;">Veículos Liberados</div>
-                <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
-                    {total_liberados}
-                </div>
+        st.markdown(f"""
+        <div style="margin-bottom:20px;">
+            <div style="color:#1E88E5;">Veículos Liberados</div>
+            <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
+                {total_liberados}
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
-            st.markdown("---")
+        st.markdown("---")
 
-            st.markdown("### Programas Avaliados")
-            st.markdown("""
-            - VW247 Udara PLAT AGT  
-            - VW247 Udara HUT AGT  
-            - VW246 SSA South Africa Entry  
-            - PL8 STEP III – TCROSS  
-            - AQ300 GEN2 MQB27 Export  
-            - M0B37W SAGA – AGT PHASE  
-            - NIVUS GTS ARGENTINA  
-            """)
+        st.markdown("### Programas Avaliados")
+        st.markdown("""
+        - VW247 Udara PLAT AGT  
+        - VW247 Udara HUT AGT  
+        - VW246 SSA South Africa Entry  
+        - PL8 STEP III – TCROSS  
+        - AQ300 GEN2 MQB27 Export  
+        - M0B37W SAGA – AGT PHASE  
+        - NIVUS GTS ARGENTINA  
+        """)
 
     # ======================
     # OUTROS
