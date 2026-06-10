@@ -118,19 +118,6 @@ div[data-testid="stHorizontalBlock"] {
 div[data-testid="stButton"] {
     position: relative;
 }
-
-div[data-testid="stButton"] > button {
-    width: 100%;
-    height: 150px;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-}
-
-
-
 </style>
 
 <div class="contato-suporte">
@@ -1234,7 +1221,7 @@ def painel():
         with col5:
             if "ENTREGA VEICULOS QA" in permissoes:
                 st.markdown("""
-                <div class='card-custom card-yellow'>
+                <div class='card-custom card-orange'>
                     <div class='card-title'>Entrega Veículos</div>
                     <div class='card-center'>Acessar</div>
                     <div class='card-bg-letter'>E</div>
