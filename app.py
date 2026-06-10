@@ -1010,7 +1010,7 @@ def painel():
     if "subpagina" not in st.session_state:
         st.session_state.subpagina = None
 
-    pagina = st.session_state.pagina_atual
+    pagina = st.session_state.get("pagina_atual", "HOME")
 
     # ======================
     # CSS DOS CARDS
@@ -1033,156 +1033,108 @@ def painel():
     # ======================
     # HOME
     # ======================
-pagina = st.session_state.get("pagina_atual", "HOME")
+    if pagina == "HOME":
 
-if pagina == "HOME":
-
-    st.markdown("""
-    <h1 style="text-align: center;">Acesso Rápido</h1>
-    <hr style="width: 200px; margin: auto;">
-    """, unsafe_allow_html=True)
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    with col1:
-        st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("<div class='card card-black'>KPM</div>", unsafe_allow_html=True)
-        if st.button("", key="kpm"):
-            st.session_state.pagina_atual = "KPM"
-            st.rerun()
-
-    with col3:
-        st.markdown("<div class='card card-red'>GMP21</div>", unsafe_allow_html=True)
-        if st.button("", key="gmp21"):
-            st.session_state.pagina_atual = "GMP21"
-            st.rerun()
-
-    with col4:
-        st.markdown("<div class='card card-blue'>STATUS</div>", unsafe_allow_html=True)
-        if st.button("", key="status"):
-            st.session_state.pagina_atual = "STATUS"
-            st.rerun()
-
-    with col5:
-        st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
-        if st.button("", key="entrega_veiculos_qa"):
-            st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
-            st.rerun()
-
-# ✅ AGORA FORA DO HOME
-elif pagina == "ENTREGA VEICULOS QA":
-
-    botao_voltar()
-
-    st.subheader("Status Liberações ZP8/Rodagem 2026")
-
-    import plotly.graph_objects as go
-    import pandas as pd
-
-    # LER CSV
-    df = pd.read_csv("dados_rodagem.csv")
-
-    # LIMPAR COLUNAS
-    df.columns = df.columns.str.strip()
-    df.columns = ["Mes", "Prevista", "Liberados"]
-
-    # LISTAS
-    meses = df["Mes"].tolist()
-    prevista = df["Prevista"].tolist()
-    liberados = df["Liberados"].tolist()
-
-    # TRATAR VAZIOS
-    prevista = [int(v) if pd.notna(v) else None for v in prevista]
-    liberados = [int(v) if pd.notna(v) else None for v in liberados]
-
-    # ✅ GRÁFICO
-    fig = go.Figure()
-
-    fig.add_trace(go.Bar(
-        name="Rodagem Prevista",
-        x=meses,
-        y=prevista,
-        text=[v if v else "" for v in prevista],
-        textposition="outside"
-    ))
-
-    fig.add_trace(go.Bar(
-        name="Veículos Liberados",
-        x=meses,
-        y=liberados,
-        text=[v if v else "" for v in liberados],
-        textposition="outside"
-    ))
-
-    fig.update_layout(
-        barmode='group',
-        title="Performance 2026 | Total de veículos liberados",
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.2,
-            xanchor="center",
-            x=0.5
-        )
-    )
-
-    col1, col2 = st.columns([3,1])
-
-    with col1:
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-
-        total_prevista = sum(v for v in prevista if v is not None)
-        total_liberados = sum(v for v in liberados if v is not None)
-
-        st.markdown("### 📊 Totais")
-
-        st.markdown(f"""
-        <div style="margin-bottom:20px;">
-            <div style="color:#90CAF9;">Rodagem Prevista</div>
-            <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
-                {total_prevista}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div style="margin-bottom:20px;">
-            <div style="color:#1E88E5;">Veículos Liberados</div>
-            <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
-                {total_liberados}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        st.markdown("### Programas Avaliados")
         st.markdown("""
-        - VW247 Udara PLAT AGT  
-        - VW247 Udara HUT AGT  
-        - VW246 SSA South Africa Entry  
-        - PL8 STEP III – TCROSS  
-        - AQ300 GEN2 MQB27 Export  
-        - M0B37W SAGA – AGT PHASE  
-        - NIVUS GTS ARGENTINA  
-        """)
+        <h1 style="text-align: center;">Acesso Rápido</h1>
+        <hr style="width: 200px; margin: auto;">
+        """, unsafe_allow_html=True)
+
+        col1, col2, col3, col4, col5 = st.columns(5)
+
+        with col1:
+            st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
+
+        with col2:
+            st.markdown("<div class='card card-black'>KPM</div>", unsafe_allow_html=True)
+            if st.button("", key="kpm"):
+                st.session_state.pagina_atual = "KPM"
+                st.rerun()
+
+        with col3:
+            st.markdown("<div class='card card-red'>GMP21</div>", unsafe_allow_html=True)
+            if st.button("", key="gmp21"):
+                st.session_state.pagina_atual = "GMP21"
+                st.rerun()
+
+        with col4:
+            st.markdown("<div class='card card-blue'>STATUS</div>", unsafe_allow_html=True)
+            if st.button("", key="status"):
+                st.session_state.pagina_atual = "STATUS"
+                st.rerun()
+
+        with col5:
+            st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
+            if st.button("", key="entrega_veiculos_qa"):
+                st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
+                st.rerun()
+
+    # ======================
+    # ENTREGA
+    # ======================
+    elif pagina == "ENTREGA VEICULOS QA":
+
+        botao_voltar()
+        st.subheader("Status Liberações ZP8/Rodagem 2026")
+
+        import plotly.graph_objects as go
+        import pandas as pd
+
+        df = pd.read_csv("dados_rodagem.csv")
+        df.columns = df.columns.str.strip()
+        df.columns = ["Mes", "Prevista", "Liberados"]
+
+        meses = df["Mes"].tolist()
+        prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
+        liberados = [int(v) if pd.notna(v) else None for v in df["Liberados"]]
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Bar(
+            name="Rodagem Prevista",
+            x=meses,
+            y=prevista,
+            text=[v if v else "" for v in prevista],
+            textposition="outside"
+        ))
+
+        fig.add_trace(go.Bar(
+            name="Veículos Liberados",
+            x=meses,
+            y=liberados,
+            text=[v if v else "" for v in liberados],
+            textposition="outside"
+        ))
+
+        fig.update_layout(
+            barmode='group',
+            title="Performance 2026 | Total de veículos liberados"
+        )
+
+        col1, col2 = st.columns([3,1])
+
+        with col1:
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            total_prevista = sum(v for v in prevista if v)
+            total_liberados = sum(v for v in liberados if v)
+
+            st.markdown(f"**Prevista:** {total_prevista}")
+            st.markdown(f"**Liberados:** {total_liberados}")
 
     # ======================
     # OUTROS
     # ======================
-elif pagina == "GMP21":
+    elif pagina == "GMP21":
         botao_voltar()
         st.subheader("GMP21 Budget")
 
-elif pagina == "KPM":
+    elif pagina == "KPM":
         botao_voltar()
         st.subheader("Dashboard KPM")
 
-elif pagina == "STATUS":
+    elif pagina == "STATUS":
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
 
