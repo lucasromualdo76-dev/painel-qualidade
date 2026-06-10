@@ -976,17 +976,18 @@ def pagina_templates():
 # =========================================
 
 def sync_pagina_com_url():
-    if "pagina" in st.query_params:
-        pagina_url = st.query_params["pagina"]
-        if isinstance(pagina_url, list):
-            pagina_url = pagina_url[0]
-        st.session_state.pagina_atual = pagina_url
-    elif "pagina_atual" not in st.session_state:
-        st.session_state.pagina_atual = "HOME"
+    if "pagina_atual" not in st.session_state:
+        if "pagina" in st.query_params:
+            pagina_url = st.query_params["pagina"]
+            if isinstance(pagina_url, list):
+                pagina_url = pagina_url[0]
+            st.session_state.pagina_atual = pagina_url
+        else:
+            st.session_state.pagina_atual = "HOME"
 
 def ir_para(pagina):
     st.session_state.pagina_atual = pagina
-    st.query_params["pagina"] = pagina
+    st.query_params.update({"pagina": pagina})
     st.rerun()
 
 def botao_voltar():
