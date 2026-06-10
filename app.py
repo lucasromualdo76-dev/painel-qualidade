@@ -1037,8 +1037,6 @@ def painel():
 
 if pagina == "HOME":
 
-    pagina = st.session_state.get("pagina_atual", "HOME")
-
     st.markdown("""
     <h1 style="text-align: center;">Acesso Rápido</h1>
     <hr style="width: 200px; margin: auto;">
@@ -1187,7 +1185,7 @@ def logout():
 # =========================================
 # FLUXO PRINCIPAL DO APP
 # =========================================
-if st.session_state.logado:
+if st.session_state.get("logado", False):
     painel()
 else:
     aplicar_background_login()
