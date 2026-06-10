@@ -1043,22 +1043,22 @@ def painel():
         col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
-            st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-locked'>Em Manutenção</div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("<div class='card card-black'>KPM</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-black'>KPI's de KPM</div>", unsafe_allow_html=True)
             if st.button("", key="kpm"):
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
 
         with col3:
-            st.markdown("<div class='card card-red'>GMP21</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-red'>Prognose GMP21</div>", unsafe_allow_html=True)
             if st.button("", key="gmp21"):
                 st.session_state.pagina_atual = "GMP21"
                 st.rerun()
 
         with col4:
-            st.markdown("<div class='card card-blue'>STATUS</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-blue'>Analise Custo Reparo</div>", unsafe_allow_html=True)
             if st.button("", key="status"):
                 st.session_state.pagina_atual = "STATUS"
                 st.rerun()
