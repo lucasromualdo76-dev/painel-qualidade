@@ -1071,8 +1071,8 @@ def painel():
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
             
-        else:
-        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            else:
+            st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
 
 
@@ -1089,8 +1089,8 @@ def painel():
                 if st.button("", key="status"):
                     st.session_state.pagina_atual = "STATUS"
                     st.rerun()
-        else:
-        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            else:
+            st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
 
         
