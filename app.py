@@ -1113,15 +1113,15 @@ elif pagina == "ENTREGA VEICULOS QA":
 
     col1, col2 = st.columns([3,1])
 
-    # ✅ COLUNA DO GRÁFICO
-with col1:
+    # ✅ GRÁFICO (CORRETO)
+    with col1:
         st.plotly_chart(fig, use_container_width=True)
 
-    # ✅ COLUNA DOS TOTAIS (AGORA CORRETO)
-with col2:
+    # ✅ TOTAIS (CORRETO)
+    with col2:
 
-    total_prevista = sum(v for v in prevista if v is not None)
-    total_liberados = sum(v for v in liberados if v is not None)
+        total_prevista = sum(v for v in prevista if v is not None)
+        total_liberados = sum(v for v in liberados if v is not None)
 
         st.markdown("### 📊 Totais")
 
