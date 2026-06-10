@@ -1108,7 +1108,13 @@ def painel():
         # ✅ COLUNA 2 (KPM)
         with col2:
             if "KPM" in permissoes:
-                st.markdown("<div class='card card-black'>KPI KPM</div>", unsafe_allow_html=True)
+                st.markdown("""
+                <div class='card-custom card-black'>
+                <div class='card-title'>KPI KPM</div>
+                <div class='card-center'>Acessar</div>
+                <div class='card-bg-letter'>K</div>
+            </div>
+            """, unsafe_allow_html=True)
                 if st.button("", key="kpm"):
                     st.session_state.pagina_atual = "KPM"
                     st.rerun()
@@ -1118,7 +1124,14 @@ def painel():
         # ✅ COLUNA 3 (GMP21)
         with col3:
             if "GMP21" in permissoes:
-                st.markdown("<div class='card card-red'>Prognose GMP21</div>", unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class='card-custom card-red'>
+                    <div class='card-title'>Prognose GMP21</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>G</div>
+            </div>
+            """, unsafe_allow_html=True)
                 if st.button("", key="gmp21"):
                     st.session_state.pagina_atual = "GMP21"
                     st.rerun()
@@ -1128,7 +1141,14 @@ def painel():
         # ✅ COLUNA 4 (STATUS)
         with col4:
             if "STATUS" in permissoes:
-                st.markdown("<div class='card card-blue'>Analise Custo Reparo</div>", unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class='card-custom card-blue'>
+                    <div class='card-title'>Análise Custo Reparo</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>S</div>
+                </div>
+                """, unsafe_allow_html=True)
                 if st.button("", key="status"):
                     st.session_state.pagina_atual = "STATUS"
                     st.rerun()
@@ -1138,7 +1158,13 @@ def painel():
         # ✅ COLUNA 5 (ENTREGA)
         with col5:
             if "ENTREGA VEICULOS QA" in permissoes:
-                st.markdown("<div class='card card-black'>Curva de Entrega Veiculos</div>", unsafe_allow_html=True)
+                st.markdown("""
+                <div class='card-custom card-orange'>
+                    <div class='card-title'>Entrega Veículos</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>E</div>
+            </div>
+            """, unsafe_allow_html=True)
                 if st.button("", key="entrega_veiculos_qa"):
                     st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                     st.rerun()
