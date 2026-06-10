@@ -33,6 +33,9 @@ st.set_page_config(page_title="Painel de Qualidade", layout="wide")
 # ======================================================
 # CSS GLOBAL
 # ======================================================
+
+
+
 st.markdown("""
 <style>
 /* Input compacto */
@@ -69,11 +72,64 @@ div[data-testid="stHorizontalBlock"] {
     border-radius: 6px;
     font-family: Arial;
 }
+/* ============================= */
+/* ESTILO DOS CARDS NOVOS */
+/* ============================= */
 
-/* Remove barra do header */
+.card-custom {
+    height: 150px;
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* efeito hover 🔥 */
+.card-custom:hover {
+    transform: scale(1.03);
+}
+
+/* texto no topo */
+.card-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* ✅ TEXTO "ACESSAR" NO CANTO INFERIOR */
+.card-bottom {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    font-size: 13px;
+}
+
+/* letra grande no fundo */
+.card-bg-letter {
+    position: absolute;
+    right: 10px;
+    bottom: 0px;
+    font-size: 110px;
+    color: rgba(255,255,255,0.2);
+    font-weight: bold;
+}
+
+/* ✅ FAZ O BOTÃO COBRIR O CARD */
+div[data-testid="stButton"] > button {
+    width: 100%;
+    height: 150px;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Header */
 header[data-testid="stHeader"] { background: transparent !important; }
 header[data-testid="stHeader"]::after { display: none; }
+
 </style>
+""", unsafe_allow_html=True)
 
 <div class="contato-suporte">
 📩 <strong>Dúvidas:</strong> Lucas.silva9@volkswagen.com.br
