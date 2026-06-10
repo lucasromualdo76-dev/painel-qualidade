@@ -1136,13 +1136,14 @@ def painel():
             )])
 
             fig_pizza.update_traces(
-            textinfo="percent+label",
+            textinfo="percent",
+            textposition="outside"
             marker=dict(colors=["#1E88E5", "#90CAF9"])
             )
 
             fig_pizza.update_layout(
             showlegend=False,
-            height=400
+            height=350
             )
 
             st.plotly_chart(fig_pizza, use_container_width=True)
