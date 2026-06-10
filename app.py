@@ -1105,20 +1105,20 @@ def painel():
         
        #    STREIFELIST
         with col1:
-    if "OVERDUE" in permissoes:
-        st.markdown("""
-        <div class='card-custom card-orange'>
+            if "OVERDUE" in permissoes:
+            st.markdown("""
+            <div class='card-custom card-orange'>
             <div class='card-title'>Overdue Streifenlist</div>
             <div class='card-center'>Acessar</div>
             <div class='card-bg-letter'>O</div>
         </div>
         """, unsafe_allow_html=True)
 
-        if st.button("", key="overdue"):
-            st.session_state.pagina_atual = "OVERDUE"
-            st.rerun()
-    else:
-        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            if st.button("", key="overdue"):
+                st.session_state.pagina_atual = "OVERDUE"
+                st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
         # ✅ COLUNA 2 (KPM)
         with col2:
