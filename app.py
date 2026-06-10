@@ -1174,7 +1174,7 @@ def painel():
             </div>
             """, unsafe_allow_html=True)
 
-                if st.button(" ", key="overdue"):   # 👈 botão logo abaixo
+                if st.button("Acessar", key="overdue"):   # 👈 botão logo abaixo
                     st.session_state.pagina_atual = "OVERDUE"
                     st.rerun()
             else:
@@ -1190,7 +1190,7 @@ def painel():
                 <div class='card-bg-letter'>K</div>
             </div>
             """, unsafe_allow_html=True)
-                if st.button("", key="kpm"):
+                if st.button("Acessar", key="kpm"):
                     st.session_state.pagina_atual = "KPM"
                     st.rerun()
             else:
@@ -1207,7 +1207,7 @@ def painel():
                     <div class='card-bg-letter'>G</div>
             </div>
             """, unsafe_allow_html=True)
-                if st.button("", key="gmp21"):
+                if st.button("Acessar", key="gmp21"):
                     st.session_state.pagina_atual = "GMP21"
                     st.rerun()
             else:
@@ -1224,7 +1224,7 @@ def painel():
                     <div class='card-bg-letter'>S</div>
                 </div>
                 """, unsafe_allow_html=True)
-                if st.button("", key="status"):
+                if st.button("Acessar", key="status"):
                     st.session_state.pagina_atual = "STATUS"
                     st.rerun()
             else:
@@ -1234,13 +1234,13 @@ def painel():
         with col5:
             if "ENTREGA VEICULOS QA" in permissoes:
                 st.markdown("""
-                <div class='card-custom card-orange'>
+                <div class='card-custom card-yellow'>
                     <div class='card-title'>Entrega Veículos</div>
                     <div class='card-center'>Acessar</div>
                     <div class='card-bg-letter'>E</div>
             </div>
             """, unsafe_allow_html=True)
-                if st.button("", key="entrega_veiculos_qa"):
+                if st.button("Acessar", key="entrega_veiculos_qa"):
                     st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                     st.rerun()
             else:
