@@ -115,6 +115,10 @@ div[data-testid="stHorizontalBlock"] {
 }
 
 /* ✅ FAZ O BOTÃO COBRIR O CARD */
+div[data-testid="stButton"] {
+    position: relative;
+}
+
 div[data-testid="stButton"] > button {
     width: 100%;
     height: 150px;
@@ -122,7 +126,9 @@ div[data-testid="stButton"] > button {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 10;
 }
+
 
 
 </style>
@@ -1157,16 +1163,18 @@ def painel():
         
        #    STREIFELIST
         with col1:
+
             if "OVERDUE" in permissoes:
+
                 st.markdown("""
                 <div class='card-custom card-orange'>
                 <div class='card-title'>Overdue Streifenlist</div>
-                <div class='card-center'>Acessar</div>
+                <div class='card-bottom'>Acessar</div>
                 <div class='card-bg-letter'>O</div>
             </div>
             """, unsafe_allow_html=True)
 
-                if st.button("", key="overdue"):
+                if st.button(" ", key="overdue"):   # 👈 botão logo abaixo
                     st.session_state.pagina_atual = "OVERDUE"
                     st.rerun()
             else:
