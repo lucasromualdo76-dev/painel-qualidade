@@ -1033,6 +1033,9 @@ def painel():
     # ======================
     # HOME
     # ======================
+
+pagina = st.session_state.get("pagina_atual", "HOME")
+
 if pagina == "HOME":
 
     st.markdown("""
