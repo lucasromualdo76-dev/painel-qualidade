@@ -1118,33 +1118,33 @@ def painel():
 
         with col2:
 
-    total_prevista = sum(v for v in prevista if v is not None)
-    total_liberados = sum(v for v in liberados if v is not None)
+            total_prevista = sum(v for v in prevista if v is not None)
+            total_liberados = sum(v for v in liberados if v is not None)
 
-    st.markdown("### 📊 Totais")
+            st.markdown("### 📊 Totais")
 
-    st.markdown(f"Prevista: {total_prevista}")
-    st.markdown(f"Liberados: {total_liberados}")
+            st.markdown(f"Prevista: {total_prevista}")
+            st.markdown(f"Liberados: {total_liberados}")
 
-    restante = total_prevista - total_liberados
+            restante = total_prevista - total_liberados
 
-    fig_pizza = go.Figure(data=[go.Pie(
-        labels=["Liberados", "Restante"],
-        values=[total_liberados, restante],
-        hole=0.5
+            fig_pizza = go.Figure(data=[go.Pie(
+            labels=["Liberados", "Restante"],
+            values=[total_liberados, restante],
+            hole=0.5
     )])
 
-    fig_pizza.update_traces(
-        textinfo="percent+label",
-        marker=dict(colors=["#1E88E5", "#90CAF9"])
+            fig_pizza.update_traces(
+            textinfo="percent+label",
+            marker=dict(colors=["#1E88E5", "#90CAF9"])
     )
 
-    fig_pizza.update_layout(
-        showlegend=False,
-        height=250
+            fig_pizza.update_layout(
+            showlegend=False,
+            height=250
     )
 
-    st.plotly_chart(fig_pizza, use_container_width=True)
+            st.plotly_chart(fig_pizza, use_container_width=True)
 
 
 
