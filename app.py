@@ -1117,11 +1117,42 @@ def painel():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            total_prevista = sum(v for v in prevista if v)
-            total_liberados = sum(v for v in liberados if v)
 
-            st.markdown(f"**Prevista:** {total_prevista}")
-            st.markdown(f"**Liberados:** {total_liberados}")
+            total_prevista = sum(v for v in prevista if v is not None)
+            total_liberados = sum(v for v in liberados if v is not None)
+
+           st.markdown("### 📊 Totais")
+
+           st.markdown(f"""
+          <div style="margin-bottom:20px;">
+          <div style="color:#90CAF9;">Rodagem Prevista</div>
+          <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+            {total_prevista}
+           </div>
+              </div>
+               """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="margin-bottom:20px;">
+        <div style="color:#1E88E5;">Veículos Liberados</div>
+        <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
+            {total_liberados}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("### Programas Avaliados")
+    st.markdown("""
+    - VW247 Udara PLAT AGT  
+    - VW247 Udara HUT AGT  
+    - VW246 SSA South Africa Entry  
+    - PL8 STEP III – TCROSS  
+    - AQ300 GEN2 MQB27 Export  
+    - M0B37W SAGA – AGT PHASE  
+    - NIVUS GTS ARGENTINA  
+    """)
 
     # ======================
     # OUTROS
