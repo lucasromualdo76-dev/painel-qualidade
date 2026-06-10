@@ -667,7 +667,14 @@ def Comparativo_Custo_Reparo_Prognose():
     if len(df_plot):
         fig = px.bar(df_plot, x="Projeto/Aba", y="Total Coluna J", text="Total Coluna J")
         fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        fig.update_layout(yaxis_title="Total Coluna J", xaxis_title="Projeto/Aba")
+        
+        fig.update_layout(
+        barmode='group',
+        title="Performance 2026 | Total de veículos liberados",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide'
+)
+
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Não foi possível localizar valores numéricos na Coluna J das abas selecionadas.")
