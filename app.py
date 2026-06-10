@@ -1037,13 +1037,13 @@ def painel():
 
         
 
-    st.markdown("""
-    <h1 style="text-align: center;">ACESSO RÁPIDO</h1>
-    <hr style="width: 200px; margin: auto;">
-    """, unsafe_allow_html=True)
+       st.markdown("""
+       <h1 style="text-align: center;">Acesso Rápido</h1>
+       <hr style="width: 200px; margin: auto;">
+       """, unsafe_allow_html=True)
 
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+       col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
             st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
