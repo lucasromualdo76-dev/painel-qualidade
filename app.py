@@ -1072,51 +1072,53 @@ def painel():
     # ======================
     # ENTREGA
     # ======================
-    elif pagina == "ENTREGA VEICULOS QA":
+elif pagina == "ENTREGA VEICULOS QA":
 
-        botao_voltar()
-        st.subheader("Status Liberações ZP8/Rodagem 2026")
+    botao_voltar()
+    st.subheader("Status Liberações ZP8/Rodagem 2026")
 
-        import plotly.graph_objects as go
-        import pandas as pd
+    import plotly.graph_objects as go
+    import pandas as pd
 
-        df = pd.read_csv("dados_rodagem.csv")
-        df.columns = df.columns.str.strip()
-        df.columns = ["Mes", "Prevista", "Liberados"]
+    df = pd.read_csv("dados_rodagem.csv")
+    df.columns = df.columns.str.strip()
+    df.columns = ["Mes", "Prevista", "Liberados"]
 
-        meses = df["Mes"].tolist()
-        prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
-        liberados = [int(v) if pd.notna(v) else None for v in df["Liberados"]]
+    meses = df["Mes"].tolist()
+    prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
+    liberados = [int(v) if pd.notna(v) else None for v in df["Liberados"]]
 
-        fig = go.Figure()
+    fig = go.Figure()
 
-        fig.add_trace(go.Bar(
-            name="Rodagem Prevista",
-            x=meses,
-            y=prevista,
-            text=[v if v else "" for v in prevista],
-            textposition="outside"
-        ))
+    fig.add_trace(go.Bar(
+        name="Rodagem Prevista",
+        x=meses,
+        y=prevista,
+        text=[v if v else "" for v in prevista],
+        textposition="outside"
+    ))
 
-        fig.add_trace(go.Bar(
-            name="Veículos Liberados",
-            x=meses,
-            y=liberados,
-            text=[v if v else "" for v in liberados],
-            textposition="outside"
-        ))
+    fig.add_trace(go.Bar(
+        name="Veículos Liberados",
+        x=meses,
+        y=liberados,
+        text=[v if v else "" for v in liberados],
+        textposition="outside"
+    ))
 
-        fig.update_layout(
-            barmode='group',
-            title="Performance 2026 | Total de veículos liberados"
-        )
+    fig.update_layout(
+        barmode='group',
+        title="Performance 2026 | Total de veículos liberados"
+    )
 
-        col1, col2 = st.columns([3,1])
+    col1, col2 = st.columns([3,1])
 
-        with col1:
-            st.plotly_chart(fig, use_container_width=True)
+    # ✅ COLUNA DO GRÁFICO
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
+    # ✅ COLUNA DOS TOTAIS (AGORA CORRETO)
+    with col2:
 
         total_prevista = sum(v for v in prevista if v is not None)
         total_liberados = sum(v for v in liberados if v is not None)
@@ -1125,19 +1127,19 @@ def painel():
 
         st.markdown(f"""
         <div style="margin-bottom:20px;">
-        <div style="color:#90CAF9;">Rodagem Prevista</div>
-        <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
-            {total_prevista}
-        </div>
+            <div style="color:#90CAF9;">Rodagem Prevista</div>
+            <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+                {total_prevista}
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
         <div style="margin-bottom:20px;">
-        <div style="color:#1E88E5;">Veículos Liberados</div>
-        <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
-            {total_liberados}
-        </div>
+            <div style="color:#1E88E5;">Veículos Liberados</div>
+            <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
+                {total_liberados}
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
