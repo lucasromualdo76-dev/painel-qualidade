@@ -1118,19 +1118,19 @@ def painel():
 
         with col2:
 
-            total_prevista = sum(v for v in prevista if v is not None)
-            total_liberados = sum(v for v in liberados if v is not None)
+    total_prevista = sum(v for v in prevista if v is not None)
+    total_liberados = sum(v for v in liberados if v is not None)
 
-           st.markdown("### 📊 Totais")
+    st.markdown("### 📊 Totais")
 
-           st.markdown(f"""
-          <div style="margin-bottom:20px;">
-          <div style="color:#90CAF9;">Rodagem Prevista</div>
-          <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+    st.markdown(f"""
+    <div style="margin-bottom:20px;">
+        <div style="color:#90CAF9;">Rodagem Prevista</div>
+        <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
             {total_prevista}
-           </div>
-              </div>
-               """, unsafe_allow_html=True)
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown(f"""
     <div style="margin-bottom:20px;">
