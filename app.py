@@ -1069,34 +1069,31 @@ if pagina == "HOME":
             st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
             st.rerun()
 
-    # ======================
-    # ENTREGA DFQ
-    # ======================
-    elif pagina == "ENTREGA VEICULOS QA":
+# ✅ AGORA FORA DO HOME
+elif pagina == "ENTREGA VEICULOS QA":
 
-        botao_voltar()
+    botao_voltar()
 
-        st.subheader("Status Liberações ZP8/Rodagem 2026")
+    st.subheader("Status Liberações ZP8/Rodagem 2026")
 
-        import plotly.graph_objects as go
+    import plotly.graph_objects as go
+    import pandas as pd
 
-        # ✅ LER EXCEL
-        df = pd.read_csv("dados_rodagem.csv")
+    # LER CSV
+    df = pd.read_csv("dados_rodagem.csv")
 
-        # ✅ LIMPAR COLUNAS
-        df.columns = df.columns.str.strip()
-        df.columns = ["Mes", "Prevista", "Liberados"]
+    # LIMPAR COLUNAS
+    df.columns = df.columns.str.strip()
+    df.columns = ["Mes", "Prevista", "Liberados"]
 
-        # ✅ LISTAS
-        meses = df["Mes"].tolist()
-        prevista = df["Prevista"].tolist()
-        liberados = df["Liberados"].tolist()
+    # LISTAS
+    meses = df["Mes"].tolist()
+    prevista = df["Prevista"].tolist()
+    liberados = df["Liberados"].tolist()
 
-        # ✅ TRATAR VAZIOS
-        
-        
-        prevista = [int(v) if pd.notna(v) else None for v in prevista]
-        liberados = [int(v) if pd.notna(v) else None for v in liberados]
+    # TRATAR VAZIOS
+    prevista = [int(v) if pd.notna(v) else None for v in prevista]
+    liberados = [int(v) if pd.notna(v) else None for v in liberados]
 
 
 
