@@ -1046,7 +1046,7 @@ def painel():
             st.markdown("<div class='card card-locked'>Em Manutenção</div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("<div class='card card-black'>KPI's de KPM</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-black'>KPI KPM</div>", unsafe_allow_html=True)
             if st.button("", key="kpm"):
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
