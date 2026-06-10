@@ -124,12 +124,8 @@ div[data-testid="stButton"] > button {
     left: 0;
 }
 
-/* Header */
-header[data-testid="stHeader"] { background: transparent !important; }
-header[data-testid="stHeader"]::after { display: none; }
 
 </style>
-""", unsafe_allow_html=True)
 
 <div class="contato-suporte">
 📩 <strong>Dúvidas:</strong> Lucas.silva9@volkswagen.com.br
