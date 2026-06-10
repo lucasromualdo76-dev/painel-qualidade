@@ -1038,12 +1038,55 @@ def painel():
     # ======================
     st.markdown("""
     <style>
-    .card {height: 130px; border-radius: 12px; padding: 12px; position: relative;
-           box-shadow: 0px 6px 15px rgba(0,0,0,0.2);}
-    .card-locked {background: #d1d5db; color: #555;}
-    .card-red {background: linear-gradient(135deg, #e53935, #8e0000); color:white;}
-    .card-blue {background: linear-gradient(135deg, #64b5f6, #1565c0); color:white;}
-    .card-black {background: linear-gradient(135deg, #444, #000); color:white;}
+    .card-custom {
+        height: 150px;
+        border-radius: 12px;
+        padding: 15px;
+        position: relative;
+        color: black;
+        cursor: pointer;
+}
+
+    .card-orange {
+        background: linear-gradient(135deg, #ffb37a, #ff7a00);
+}
+
+    .card-blue {
+        background: linear-gradient(135deg, #64b5f6, #1565c0);
+        color: white;
+}
+
+    .card-red {
+        background: linear-gradient(135deg, #e53935, #8e0000);
+        color: white;
+}
+
+    .card-black {
+        background: linear-gradient(135deg, #444, #000);
+        color: white;
+}
+
+    .card-title {
+        font-size: 14px;
+        font-weight: bold;
+}
+
+    .card-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 16px;
+}
+
+    .card-bg-letter {
+        position: absolute;
+        right: 10px;
+        bottom: 0px;
+        font-size: 110px;
+        color: rgba(255,255,255,0.2);
+        font-weight: bold;
+}
     </style>
     """, unsafe_allow_html=True)
 
