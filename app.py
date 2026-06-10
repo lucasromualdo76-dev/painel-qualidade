@@ -1137,7 +1137,7 @@ def painel():
 
             fig_pizza.update_traces(
             textinfo="percent",
-            textposition="outside"
+            textposition="outside",
             marker=dict(colors=["#1E88E5", "#90CAF9"])
             )
 
