@@ -1064,7 +1064,7 @@ def painel():
                 st.rerun()
 
         with col5:
-            st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-black'>Curva de Entrega Veiculos</div>", unsafe_allow_html=True)
             if st.button("", key="entrega_veiculos_qa"):
                 st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                 st.rerun()
