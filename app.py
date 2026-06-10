@@ -1033,7 +1033,6 @@ def painel():
     usuario = st.session_state.get("usuario", "")
     permissoes = PERMISSOES.get(usuario, [])
 
-
     # ======================
     # CSS DOS CARDS
     # ======================
@@ -1063,45 +1062,45 @@ def painel():
         with col1:
             st.markdown("<div class='card card-locked'>Em Manutenção</div>", unsafe_allow_html=True)
 
-        
+        # ✅ COLUNA 2 (KPM)
         with col2:
             if "KPM" in permissoes:
                 st.markdown("<div class='card card-black'>KPI KPM</div>", unsafe_allow_html=True)
-            if st.button("", key="kpm"):
-                st.session_state.pagina_atual = "KPM"
-                st.rerun()
-            
+                if st.button("", key="kpm"):
+                    st.session_state.pagina_atual = "KPM"
+                    st.rerun()
             else:
-            st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-
-
+        # ✅ COLUNA 3 (GMP21)
         with col3:
-            st.markdown("<div class='card card-red'>Prognose GMP21</div>", unsafe_allow_html=True)
-            if st.button("", key="gmp21"):
-                st.session_state.pagina_atual = "GMP21"
-                st.rerun()
+            if "GMP21" in permissoes:
+                st.markdown("<div class='card card-red'>Prognose GMP21</div>", unsafe_allow_html=True)
+                if st.button("", key="gmp21"):
+                    st.session_state.pagina_atual = "GMP21"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        
+        # ✅ COLUNA 4 (STATUS)
         with col4:
-             if "STATUS" in permissoes:
+            if "STATUS" in permissoes:
                 st.markdown("<div class='card card-blue'>Analise Custo Reparo</div>", unsafe_allow_html=True)
                 if st.button("", key="status"):
                     st.session_state.pagina_atual = "STATUS"
                     st.rerun()
             else:
-            st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-
-        
+        # ✅ COLUNA 5 (ENTREGA)
         with col5:
             if "ENTREGA VEICULOS QA" in permissoes:
                 st.markdown("<div class='card card-black'>Curva de Entrega Veiculos</div>", unsafe_allow_html=True)
                 if st.button("", key="entrega_veiculos_qa"):
                     st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                     st.rerun()
-        else:
-        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
 
     # ======================
