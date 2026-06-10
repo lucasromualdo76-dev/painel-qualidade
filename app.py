@@ -1034,9 +1034,10 @@ def painel():
     # HOME
     # ======================
 
-pagina = st.session_state.get("pagina_atual", "HOME")
 
 if pagina == "HOME":
+
+    pagina = st.session_state.get("pagina_atual", "HOME")
 
     st.markdown("""
     <h1 style="text-align: center;">Acesso Rápido</h1>
