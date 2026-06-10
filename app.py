@@ -1086,8 +1086,23 @@ def painel():
 
         fig = go.Figure()
 
-        fig.add_trace(go.Bar(name="Rodagem Prevista", x=meses, y=prevista))
-        fig.add_trace(go.Bar(name="Veículos Liberados", x=meses, y=liberados))
+
+        fig.add_trace(go.Bar(
+        name="Rodagem Prevista",
+        x=meses,
+        y=prevista,
+        text=[v if v is not None else "" for v in prevista],
+        textposition="outside"
+))
+
+        fig.add_trace(go.Bar(
+        name="Veículos Liberados",
+        x=meses,
+        y=liberados,
+        text=[v if v is not None else "" for v in liberados],
+        textposition="outside"
+))
+
 
         col1, col2 = st.columns([3,1])
 
