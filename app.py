@@ -96,7 +96,7 @@ USUARIOS = {
 # =========================================
 PERMISSOES = {
     "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA"],  # acesso total
-    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA"],
+    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA"],    # acesso total
 
     "ufcmart": ["ENTREGA VEICULOS QA"],
     "vyplfbt": ["ENTREGA VEICULOS QA"],
