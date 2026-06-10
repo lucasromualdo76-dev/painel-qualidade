@@ -91,6 +91,18 @@ USUARIOS = {
     "admin": "admin"
 }
 
+# =========================================
+# PERMISSÕES DE ACESSO
+# =========================================
+PERMISSOES = {
+    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA"],  # acesso total
+    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA"],
+
+    "ufcmart": ["ENTREGA VEICULOS QA"],
+    "vyplfbt": ["ENTREGA VEICULOS QA"],
+    "gibvvr7": ["ENTREGA VEICULOS QA"]
+}
+
 # ======================================================
 # SESSÃO
 # ======================================================
@@ -1018,6 +1030,9 @@ def painel():
         st.session_state.subpagina = None
 
     pagina = st.session_state.get("pagina_atual", "HOME")
+    usuario = st.session_state.get("usuario", "")
+    permissoes = PERMISSOES.get(usuario, [])
+
 
     # ======================
     # CSS DOS CARDS
@@ -1048,11 +1063,16 @@ def painel():
         with col1:
             st.markdown("<div class='card card-locked'>Em Manutenção</div>", unsafe_allow_html=True)
 
+        
         with col2:
-            st.markdown("<div class='card card-black'>KPI KPM</div>", unsafe_allow_html=True)
+            if "KPM" in permissoes:
+                st.markdown("<div class='card card-black'>KPI KPM</div>", unsafe_allow_html=True)
             if st.button("", key="kpm"):
                 st.session_state.pagina_atual = "KPM"
                 st.rerun()
+            else:
+            st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True
+
 
         with col3:
             st.markdown("<div class='card card-red'>Prognose GMP21</div>", unsafe_allow_html=True)
@@ -1060,17 +1080,27 @@ def painel():
                 st.session_state.pagina_atual = "GMP21"
                 st.rerun()
 
+        
         with col4:
-            st.markdown("<div class='card card-blue'>Analise Custo Reparo</div>", unsafe_allow_html=True)
-            if st.button("", key="status"):
-                st.session_state.pagina_atual = "STATUS"
-                st.rerun()
+             if "STATUS" in permissoes:
+                st.markdown("<div class='card card-blue'>Analise Custo Reparo</div>", unsafe_allow_html=True)
+                if st.button("", key="status"):
+                    st.session_state.pagina_atual = "STATUS"
+                    st.rerun()
+        else:
+        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
+
+        
         with col5:
-            st.markdown("<div class='card card-black'>Curva de Entrega Veiculos</div>", unsafe_allow_html=True)
-            if st.button("", key="entrega_veiculos_qa"):
-                st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
-                st.rerun()
+            if "ENTREGA VEICULOS QA" in permissoes:
+                st.markdown("<div class='card card-black'>Curva de Entrega Veiculos</div>", unsafe_allow_html=True)
+                if st.button("", key="entrega_veiculos_qa"):
+                    st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
+                    st.rerun()
+        else:
+        st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+
 
     # ======================
     # ENTREGA
@@ -1154,14 +1184,28 @@ def painel():
     # OUTROS
     # ======================
     elif pagina == "GMP21":
+
+        if "GMP21" not in permissoes:
+            st.warning("🚫 Acesso negado")
+            return
         botao_voltar()
         st.subheader("GMP21 Budget")
 
     elif pagina == "KPM":
+    
+        if "KPM" not in permissoes:
+            st.warning("🚫 Acesso negado")
+            return
+
         botao_voltar()
         st.subheader("Dashboard KPM")
 
     elif pagina == "STATUS":
+
+        if "STATUS" not in permissoes:
+            st.warning("🚫 Acesso negado")
+            return
+
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
 
