@@ -1172,15 +1172,15 @@ elif pagina == "ENTREGA VEICULOS QA":
     # ======================
     # OUTROS
     # ======================
-    elif pagina == "GMP21":
+elif pagina == "GMP21":
         botao_voltar()
         st.subheader("GMP21 Budget")
 
-    elif pagina == "KPM":
+elif pagina == "KPM":
         botao_voltar()
         st.subheader("Dashboard KPM")
 
-    elif pagina == "STATUS":
+elif pagina == "STATUS":
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
 
