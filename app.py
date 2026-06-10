@@ -1131,18 +1131,19 @@ def painel():
             fig_pizza = go.Figure(data=[go.Pie(
             labels=["Liberados", "Restante"],
             values=[total_liberados, restante],
-            hole=0.5
-    )])
+            hole=0.5,
+            domain=dict(x=[0, 1], y=[0, 1])
+            )])
 
             fig_pizza.update_traces(
             textinfo="percent+label",
             marker=dict(colors=["#1E88E5", "#90CAF9"])
-    )
+            )
 
             fig_pizza.update_layout(
             showlegend=False,
-            height=250
-    )
+            height=400
+            )
 
             st.plotly_chart(fig_pizza, use_container_width=True)
 
