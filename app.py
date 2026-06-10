@@ -974,26 +974,37 @@ def pagina_templates():
 # =========================================
 # HELPERS DE NAVEGAÇÃO
 # =========================================
+
+def sync_pagina_com_url():
+    if "pagina" in st.query_params:
+        pagina_url = st.query_params["pagina"]
+        if isinstance(pagina_url, list):
+            pagina_url = pagina_url[0]
+        st.session_state.pagina_atual = pagina_url
+    elif "pagina_atual" not in st.session_state:
+        st.session_state.pagina_atual = "HOME"
+
 def ir_para(pagina):
     st.session_state.pagina_atual = pagina
+    st.query_params["pagina"] = pagina
     st.rerun()
 
 def botao_voltar():
-    if st.button("⬅️ Voltar"):
+    if st.button("⬅️ Voltar", key="btn_voltar"):
         ir_para("HOME")
+
 
 
 # =========================================
 # PAINEL PRINCIPAL
 # =========================================
+
 def painel():
 
+    sync_pagina_com_url()
     mostrar_data_kw()
     st.title("Design for Quality")
     mostrar_carrinho_animado_painel()
-
-    if "pagina_atual" not in st.session_state:
-        st.session_state.pagina_atual = "HOME"
 
     if "subpagina" not in st.session_state:
         st.session_state.subpagina = None
