@@ -1116,7 +1116,7 @@ def painel():
         with col1:
             st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
+with col2:
 
     total_prevista = sum(v for v in prevista if v is not None)
     total_liberados = sum(v for v in liberados if v is not None)
