@@ -1281,7 +1281,7 @@ def painel():
         dict(
             text="<b>2026</b>",
             x=0.5,
-            y=-0.12,
+            y=-0.22,
             xref="paper",
             yref="paper",
             showarrow=False,
