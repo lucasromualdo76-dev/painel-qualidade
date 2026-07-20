@@ -1241,7 +1241,12 @@ def painel():
     elif pagina == "ENTREGA VEICULOS QA":
 
         botao_voltar()
-        st.subheader("Status Liberações ZP8/Rodagem 2026")
+        
+        st.markdown("""
+        # 🚗 Status Liberações ZP8
+        ### Rodagem 2026
+        """)
+
 
         import plotly.graph_objects as go
         import pandas as pd
