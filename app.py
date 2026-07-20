@@ -8,10 +8,8 @@ from datetime import datetime, date
 import os
 import io
 import re
-
 from openai import AzureOpenAI
 from openpyxl import load_workbook
-
 import pdfplumber
 
 
@@ -33,9 +31,6 @@ st.set_page_config(page_title="Painel de Qualidade", layout="wide")
 # ======================================================
 # CSS GLOBAL
 # ======================================================
-
-
-
 st.markdown("""
 <style>
 /* Input compacto */
@@ -72,52 +67,10 @@ div[data-testid="stHorizontalBlock"] {
     border-radius: 6px;
     font-family: Arial;
 }
-/* ============================= */
-/* ESTILO DOS CARDS NOVOS */
-/* ============================= */
 
-.card-custom {
-    height: 150px;
-    border-radius: 12px;
-    padding: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-/* efeito hover 🔥 */
-.card-custom:hover {
-    transform: scale(1.03);
-}
-
-/* texto no topo */
-.card-title {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-/* ✅ TEXTO "ACESSAR" NO CANTO INFERIOR */
-.card-bottom {
-    position: absolute;
-    bottom: 10px;
-    left: 12px;
-    font-size: 13px;
-}
-
-/* letra grande no fundo */
-.card-bg-letter {
-    position: absolute;
-    right: 10px;
-    bottom: 0px;
-    font-size: 110px;
-    color: rgba(255,255,255,0.2);
-    font-weight: bold;
-}
-
-/* ✅ FAZ O BOTÃO COBRIR O CARD */
-div[data-testid="stButton"] {
-    position: relative;
-}
+/* Remove barra do header */
+header[data-testid="stHeader"] { background: transparent !important; }
+header[data-testid="stHeader"]::after { display: none; }
 </style>
 
 <div class="contato-suporte">
@@ -136,18 +89,6 @@ USUARIOS = {
     "admin": "admin"
 }
 
-# =========================================
-# PERMISSÕES DE ACESSO
-# =========================================
-PERMISSOES = {
-    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],  # acesso total
-    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],    # acesso total
-
-    "ufcmart": ["ENTREGA VEICULOS QA"],
-    "vyplfbt": ["ENTREGA VEICULOS QA"],
-    "gibvvr7": ["ENTREGA VEICULOS QA"]
-}
-
 # ======================================================
 # SESSÃO
 # ======================================================
@@ -160,7 +101,7 @@ if "usuario" not in st.session_state:
 # DATA + KW
 # ======================================================
 def aplicar_background_login():
-    img = Path("login_bg.png")
+    img = Path("login_bg.jpg")
     if img.exists():
         st.markdown(
             f"""
@@ -724,14 +665,7 @@ def Comparativo_Custo_Reparo_Prognose():
     if len(df_plot):
         fig = px.bar(df_plot, x="Projeto/Aba", y="Total Coluna J", text="Total Coluna J")
         fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        
-        fig.update_layout(
-        barmode='group',
-        title="Performance 2026 | Total de veículos liberados",
-        uniformtext_minsize=8,
-        uniformtext_mode='hide'
-)
-
+        fig.update_layout(yaxis_title="Total Coluna J", xaxis_title="Projeto/Aba")
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Não foi possível localizar valores numéricos na Coluna J das abas selecionadas.")
@@ -954,7 +888,7 @@ def pagina_links_ferramentas():
         {
 
             "nome": "SharePoint - Qualidade",
-            "url": "https://volkswagengroup.sharepoint.com/:f:/r/sites/QAProttipos/Shared%20Documents/General?csf=1&web=1&e=eNV37D",
+            "url": "General
             "desc": "Documentos e procedimentos do time",
             "tag": "Docs"
 
@@ -1040,18 +974,17 @@ def pagina_templates():
 # =========================================
 
 def sync_pagina_com_url():
-    if "pagina_atual" not in st.session_state:
-        if "pagina" in st.query_params:
-            pagina_url = st.query_params["pagina"]
-            if isinstance(pagina_url, list):
-                pagina_url = pagina_url[0]
-            st.session_state.pagina_atual = pagina_url
-        else:
-            st.session_state.pagina_atual = "HOME"
+    if "pagina" in st.query_params:
+        pagina_url = st.query_params["pagina"]
+        if isinstance(pagina_url, list):
+            pagina_url = pagina_url[0]
+        st.session_state.pagina_atual = pagina_url
+    elif "pagina_atual" not in st.session_state:
+        st.session_state.pagina_atual = "HOME"
 
 def ir_para(pagina):
     st.session_state.pagina_atual = pagina
-    st.query_params.update({"pagina": pagina})
+    st.query_params["pagina"] = pagina
     st.rerun()
 
 def botao_voltar():
@@ -1074,64 +1007,23 @@ def painel():
     if "subpagina" not in st.session_state:
         st.session_state.subpagina = None
 
-    pagina = st.session_state.get("pagina_atual", "HOME")
-    usuario = st.session_state.get("usuario", "")
-    permissoes = PERMISSOES.get(usuario, [])
+    pagina = st.session_state.pagina_atual
 
     # ======================
     # CSS DOS CARDS
     # ======================
     st.markdown("""
     <style>
-    .card-custom {
-        height: 150px;
-        border-radius: 12px;
-        padding: 15px;
-        position: relative;
-        color: black;
-        cursor: pointer;
-}
-
-    .card-orange {
-        background: linear-gradient(135deg, #ffb37a, #ff7a00);
-}
-
-    .card-blue {
-        background: linear-gradient(135deg, #64b5f6, #1565c0);
-        color: white;
-}
-
-    .card-red {
-        background: linear-gradient(135deg, #e53935, #8e0000);
-        color: white;
-}
-
-    .card-black {
-        background: linear-gradient(135deg, #444, #000);
-        color: white;
-}
-
-    .card-title {
-        font-size: 14px;
-        font-weight: bold;
-}
-
-    .card-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 16px;
-}
-
-    .card-bg-letter {
-        position: absolute;
-        right: 10px;
-        bottom: 0px;
-        font-size: 110px;
-        color: rgba(255,255,255,0.2);
-        font-weight: bold;
-}
+    .card {height: 130px; border-radius: 12px; padding: 12px; position: relative;
+           box-shadow: 0px 6px 15px rgba(0,0,0,0.2);}
+    .card-locked {background: #d1d5db; color: #555;}
+    .card-red {background: linear-gradient(135deg, #e53935, #8e0000); color:white;}
+    .card-blue {background: linear-gradient(135deg, #64b5f6, #1565c0); color:white;}
+    .card-black {background: linear-gradient(135deg, #444, #000); color:white;}
+    .titulo {font-size: 13px; font-weight: bold;}
+    .status {position:absolute; bottom:10px; left:12px; font-size:12px;}
+    .letra {position:absolute; right:10px; bottom:0px; font-size:80px;
+            color:rgba(255,255,255,0.15); font-weight:bold;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -1140,139 +1032,97 @@ def painel():
     # ======================
     if pagina == "HOME":
 
-        st.markdown("""
-        <h1 style="text-align: center;">Acesso Rápido</h1>
-        <hr style="width: 200px; margin: auto;">
-        """, unsafe_allow_html=True)
-
+        st.markdown("## 🏠 Módulos do Sistema")
         col1, col2, col3, col4, col5 = st.columns(5)
 
-        
-       #    STREIFELIST
         with col1:
+            st.markdown("<div class='card card-locked'>Módulo X</div>", unsafe_allow_html=True)
 
-            if "OVERDUE" in permissoes:
-
-                st.markdown("""
-                <div class='card-custom card-orange'>
-                <div class='card-title'>Overdue Streifenlist</div>
-                <div class='card-bottom'>Acessar</div>
-                <div class='card-bg-letter'>O</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-                if st.button("Acessar", key="overdue"):   # 👈 botão logo abaixo
-                    st.session_state.pagina_atual = "OVERDUE"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
-
-        # ✅ COLUNA 2 (KPM)
         with col2:
-            if "KPM" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-black'>
-                <div class='card-title'>KPI KPM</div>
-                <div class='card-center'>Acessar</div>
-                <div class='card-bg-letter'>K</div>
-            </div>
-            """, unsafe_allow_html=True)
-                if st.button("Acessar", key="kpm"):
-                    st.session_state.pagina_atual = "KPM"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-black'>KPM</div>", unsafe_allow_html=True)
+            if st.button("", key="kpm"):
+                st.session_state.pagina_atual = "KPM"
+                st.rerun()
 
-        # ✅ COLUNA 3 (GMP21)
         with col3:
-            if "GMP21" in permissoes:
-                
-                st.markdown("""
-                <div class='card-custom card-red'>
-                    <div class='card-title'>Prognose GMP21</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>G</div>
-            </div>
-            """, unsafe_allow_html=True)
-                if st.button("Acessar", key="gmp21"):
-                    st.session_state.pagina_atual = "GMP21"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-red'>GMP21</div>", unsafe_allow_html=True)
+            if st.button("", key="gmp21"):
+                st.session_state.pagina_atual = "GMP21"
+                st.rerun()
 
-        # ✅ COLUNA 4 (STATUS)
         with col4:
-            if "STATUS" in permissoes:
-                
-                st.markdown("""
-                <div class='card-custom card-blue'>
-                    <div class='card-title'>Análise Custo Reparo</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>S</div>
-                </div>
-                """, unsafe_allow_html=True)
-                if st.button("Acessar", key="status"):
-                    st.session_state.pagina_atual = "STATUS"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            st.markdown("<div class='card card-blue'>STATUS</div>", unsafe_allow_html=True)
+            if st.button("", key="status"):
+                st.session_state.pagina_atual = "STATUS"
+                st.rerun()
 
-        # ✅ COLUNA 5 (ENTREGA)
         with col5:
-            if "ENTREGA VEICULOS QA" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-orange'>
-                    <div class='card-title'>Entrega Veículos</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>E</div>
-            </div>
-            """, unsafe_allow_html=True)
-                if st.button("Acessar", key="entrega_veiculos_qa"):
-                    st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
-
+            st.markdown("<div class='card card-black'>ENTREGA</div>", unsafe_allow_html=True)
+            if st.button("", key="entrega veiculos QA"):
+                st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
+                st.rerun()
 
     # ======================
-    # ENTREGA
+    # ENTREGA DFQ
     # ======================
-    
     elif pagina == "ENTREGA VEICULOS QA":
 
         botao_voltar()
+
         st.subheader("Status Liberações ZP8/Rodagem 2026")
 
         import plotly.graph_objects as go
-        import pandas as pd
 
+        # ✅ LER EXCEL
         df = pd.read_csv("dados_rodagem.csv")
+
+        # ✅ LIMPAR COLUNAS
         df.columns = df.columns.str.strip()
         df.columns = ["Mes", "Prevista", "Liberados"]
 
+        # ✅ LISTAS
         meses = df["Mes"].tolist()
-        prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
-        liberados = [int(v) if pd.notna(v) else None for v in df["Liberados"]]
+        prevista = df["Prevista"].tolist()
+        liberados = df["Liberados"].tolist()
 
+        # ✅ TRATAR VAZIOS
+        
+        
+        prevista = [int(v) if pd.notna(v) else None for v in prevista]
+        liberados = [int(v) if pd.notna(v) else None for v in liberados]
+
+
+
+        # ✅ GRÁFICO
         fig = go.Figure()
 
+        fig.add_trace(go.Bar(
+            name="Rodagem Prevista",
+            x=meses,
+            y=prevista,
+            text=[v if v else "" for v in prevista],
+            textposition="outside"
+        ))
 
         fig.add_trace(go.Bar(
-        name="Rodagem Prevista",
-        x=meses,
-        y=prevista,
-        text=[v if v is not None else "" for v in prevista],
-        textposition="outside"
-))
+            name="Veículos Liberados",
+            x=meses,
+            y=liberados,
+            text=[v if v else "" for v in liberados],
+            textposition="outside"
+        ))
 
-        fig.add_trace(go.Bar(
-        name="Veículos Liberados",
-        x=meses,
-        y=liberados,
-        text=[v if v is not None else "" for v in liberados],
-        textposition="outside"
-))
-
+        fig.update_layout(
+            barmode='group',
+            title="Performance 2026 | Total de veículos liberados",
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
+        )
 
         col1, col2 = st.columns([3,1])
 
@@ -1286,70 +1136,51 @@ def painel():
 
             st.markdown("### 📊 Totais")
 
-            st.markdown(f"Prevista: {total_prevista}")
-            st.markdown(f"Liberados: {total_liberados}")
+            st.markdown(f"""
+            <div style="margin-bottom:20px;">
+                <div style="color:#90CAF9;">Rodagem Prevista</div>
+                <div style="color:#90CAF9; font-size:28px; font-weight:bold;">
+                    {total_prevista}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            restante = total_prevista - total_liberados
+            st.markdown(f"""
+            <div style="margin-bottom:20px;">
+                <div style="color:#1E88E5;">Veículos Liberados</div>
+                <div style="color:#1E88E5; font-size:28px; font-weight:bold;">
+                    {total_liberados}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            fig_pizza = go.Figure(data=[go.Pie(
-            labels=["Liberados", "Restante"],
-            values=[total_liberados, restante],
-            hole=0.5,
-            domain=dict(x=[0, 1], y=[0, 1])
-            )])
+            st.markdown("---")
 
-            fig_pizza.update_traces(
-            textinfo="percent",
-            textposition="outside",
-            marker=dict(colors=["#1E88E5", "#90CAF9"])
-            )
-
-            fig_pizza.update_layout(
-            showlegend=False,
-            height=350
-            )
-
-            st.plotly_chart(fig_pizza, use_container_width=True)
-
-
+            st.markdown("### Programas Avaliados")
+            st.markdown("""
+            - VW247 Udara PLAT AGT  
+            - VW247 Udara HUT AGT  
+            - VW246 SSA South Africa Entry  
+            - PL8 STEP III – TCROSS  
+            - AQ300 GEN2 MQB27 Export  
+            - M0B37W SAGA – AGT PHASE  
+            - NIVUS GTS ARGENTINA  
+            """)
 
     # ======================
     # OUTROS
     # ======================
     elif pagina == "GMP21":
-
-        if "GMP21" not in permissoes:
-            st.warning("🚫 Acesso negado")
-            return
         botao_voltar()
         st.subheader("GMP21 Budget")
 
     elif pagina == "KPM":
-    
-        if "KPM" not in permissoes:
-            st.warning("🚫 Acesso negado")
-            return
-
         botao_voltar()
         st.subheader("Dashboard KPM")
 
     elif pagina == "STATUS":
-
-        if "STATUS" not in permissoes:
-            st.warning("🚫 Acesso negado")
-            return
-
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
-
-    elif pagina == "OVERDUE":
-
-        if "OVERDUE" not in permissoes:
-            st.warning("🚫 Acesso negado")
-            return
-
-        botao_voltar()
-        st.subheader("Overdue Streifenlist Dashboard")
 
 
 # =========================================
@@ -1364,7 +1195,7 @@ def logout():
 # =========================================
 # FLUXO PRINCIPAL DO APP
 # =========================================
-if st.session_state.get("logado", False):
+if st.session_state.logado:
     painel()
 else:
     aplicar_background_login()
