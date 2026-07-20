@@ -1274,6 +1274,26 @@ def painel():
 ))
 
 
+        fig.update_layout(
+    margin=dict(b=80),
+
+    annotations=[
+        dict(
+            text="<b>2026</b>",
+            x=0.5,
+            y=-0.12,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+            font=dict(
+                size=18,
+                color="white"
+            )
+        )
+    ]
+)
+        
+        
         col1, col2 = st.columns([3,1])
 
         with col1:
