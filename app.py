@@ -729,7 +729,12 @@ def Comparativo_Custo_Reparo_Prognose():
         barmode='group',
         title="Performance 2026 | Total de veículos liberados",
         uniformtext_minsize=8,
-        uniformtext_mode='hide'
+        uniformtext_mode='hide',
+        plot_bgcolor="#030712",
+        paper_bgcolor="#030712",
+        font=dict(color="white"),
+        hovermode="x unified"
+
 )
 
         st.plotly_chart(fig, use_container_width=True)
