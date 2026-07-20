@@ -1306,8 +1306,11 @@ def painel():
 
             st.markdown("### 📊 Totais")
 
-            st.markdown(f"Prevista: {total_prevista}")
-            st.markdown(f"Liberados: {total_liberados}")
+            percentual = (total_liberados / total_prevista) * 100 if total_prevista > 0 else 0
+
+            st.metric("🚗 Prevista", total_prevista)
+            st.metric("✅ Liberados", total_liberados)
+            st.metric("🎯 % Liberação", f"{percentual:.1f}%")
 
             restante = total_prevista - total_liberados
 
