@@ -8,10 +8,8 @@ from datetime import datetime, date
 import os
 import io
 import re
-
 from openai import AzureOpenAI
 from openpyxl import load_workbook
-
 import pdfplumber
 
 
