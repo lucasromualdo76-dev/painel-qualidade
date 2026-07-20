@@ -1308,6 +1308,17 @@ def painel():
 
             percentual = (total_liberados / total_prevista) * 100 if total_prevista > 0 else 0
 
+            
+            if percentual >= 80:
+                st.success(f"✅ Rodagem dentro da meta ({percentual:.1f}%)")
+
+            elif percentual >= 50:
+                st.warning(f"⚠️ Atenção ({percentual:.1f}%)")
+
+            else:
+                st.error(f"🔴 Abaixo da meta ({percentual:.1f}%)")
+
+
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
             st.metric("🎯 % Liberação", f"{percentual:.1f}%")
@@ -1327,10 +1338,21 @@ def painel():
             marker=dict(colors=["#1E88E5", "#90CAF9"])
             )
 
+            
+            percentual = (total_liberados / total_prevista) * 100
+
             fig_pizza.update_layout(
-            showlegend=False,
-            height=350
-            )
+                showlegend=False,
+                height=350,
+                annotations=[
+                    dict(
+                            text=f"<b>{percentual:.1f}%</b><br>Concluído",
+                            showarrow=False,
+                            font=dict(size=18,color="white")
+        )
+    ]
+)
+
 
             st.plotly_chart(fig_pizza, use_container_width=True)
 
