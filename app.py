@@ -1141,8 +1141,9 @@ def Comparativo_Custo_Reparo_Prognose():
 # ======================================================
 # COMPARATIVO PDF
 # ======================================================
-def Comparativo_MIS_PDF():
+def Analise_Custo_Garantia():
     st.subheader("📄 Analise de Custo Garantia")   
+    
     pdf = st.file_uploader(
     "Upload PDF AQUA",
     type=["pdf"],
