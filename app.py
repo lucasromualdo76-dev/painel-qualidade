@@ -1144,15 +1144,15 @@ def Comparativo_Custo_Reparo_Prognose():
 def Analise_Custo_Garantia():
     st.subheader("📄 Analise de Custo Garantia")   
     
-    pdf = st.file_uploader(
-        "Upload PDF AQUA",
-         type=["pdf"],
-        key="pdf_garantia"
+            pdf = st.file_uploader(
+                "Upload PDF AQUA",
+                 type=["pdf"],
+                key="pdf_garantia"
     )
-     excel = st.file_uploader(
-        "Upload Excel Reparo",
-         type=["xlsx"],
-         key="excel_garantia"
+            excel = st.file_uploader(
+                    "Upload Excel Reparo",
+                     type=["xlsx"],
+                     key="excel_garantia"
     )
 
     if not pdf or not excel:
