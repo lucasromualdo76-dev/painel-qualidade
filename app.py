@@ -1259,7 +1259,7 @@ def pagina_links_ferramentas():
         },
         {
             "nome": "SharePoint - Qualidade",
-            "url": "General
+            "url": "General",
             "desc": "Documentos e procedimentos do time",
             "tag": "Docs"
         },
