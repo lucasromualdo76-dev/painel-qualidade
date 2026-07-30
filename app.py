@@ -525,7 +525,7 @@ def topbar(usuario=""):
             <img src="{VW_LOGO_URL}" />
             <div>
                 <div class="vw-topbar-title">Design for Quality</div>
-                <div class="vw-topbar-sub">Engenharia de Protótipo · Qualidade VW do Brasil</div>
+                <div class="vw-topbar-sub">Design for Quality & Bauheire · Qualidade VW Anchieta</div>
             </div>
         </div>
         <div class="vw-topbar-right">
