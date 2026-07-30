@@ -1141,6 +1141,20 @@ def Analise_Custo_Garantia():
 
     st.subheader("📄 Analise de Custo Garantia")
 
+    st.info("""
+    📌 Fluxo da análise:
+
+    1. Faça upload do PDF AQUA
+    2. Faça upload do Excel de reparo
+    3. Selecione a aba do veículo
+    4. O sistema captura automaticamente:
+   • MIS12
+   • Último valor da Coluna J
+    5. Calcula:
+
+    MIS12 × Coluna J ÷ 1000
+    """)
+
     pdf = st.file_uploader(
         "Upload PDF AQUA",
         type=["pdf"],
