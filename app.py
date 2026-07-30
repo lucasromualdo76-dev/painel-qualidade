@@ -99,6 +99,111 @@ def inject_css():
         color: var(--vw-white) !important;
     }}
 
+    /* ============================================= */
+    /* FIX: TEXTOS INVISÍVEIS EM COMPONENTES NATIVOS  */
+    /* (métricas, inputs, selects, dataframes, chat)  */
+    /* ============================================= */
+
+    /* Métricas (st.metric) */
+    div[data-testid="stMetric"] {{
+        background: var(--vw-white);
+        border: 1px solid var(--vw-border);
+        border-radius: var(--vw-radius);
+        padding: 12px 16px;
+    }}
+
+    div[data-testid="stMetricValue"] {{
+        color: var(--vw-navy) !important;
+    }}
+
+    div[data-testid="stMetricLabel"] {{
+        color: var(--vw-text-muted) !important;
+    }}
+
+    div[data-testid="stMetricDelta"] {{
+        color: var(--vw-text) !important;
+    }}
+
+    /* Inputs de texto e textarea (ex: "Copiar caminho") */
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stTextArea"] textarea,
+    div[data-testid="stNumberInput"] input {{
+        color: var(--vw-text) !important;
+        background: var(--vw-white) !important;
+        -webkit-text-fill-color: var(--vw-text) !important;
+        border-radius: 8px !important;
+        border: 1px solid var(--vw-border) !important;
+    }}
+
+    div[data-testid="stTextInput"] input::placeholder,
+    div[data-testid="stTextArea"] textarea::placeholder {{
+        color: var(--vw-text-muted) !important;
+        -webkit-text-fill-color: var(--vw-text-muted) !important;
+        opacity: 1 !important;
+    }}
+
+    /* Selectbox / Multiselect (BaseWeb) */
+    div[data-baseweb="select"] * {{
+        color: var(--vw-text) !important;
+    }}
+
+    div[data-baseweb="select"] > div {{
+        background: var(--vw-white) !important;
+        border-color: var(--vw-border) !important;
+    }}
+
+    /* Menu suspenso das opções (fora do container principal) */
+    ul[data-testid="stVirtualDropdown"] li,
+    ul[data-testid="stVirtualDropdown"] li * {{
+        color: var(--vw-text) !important;
+        background: var(--vw-white) !important;
+    }}
+
+    /* Date input */
+    div[data-testid="stDateInput"] input {{
+        color: var(--vw-text) !important;
+        background: var(--vw-white) !important;
+        -webkit-text-fill-color: var(--vw-text) !important;
+    }}
+
+    /* Dataframes / tabelas */
+    div[data-testid="stDataFrame"] * {{
+        color: var(--vw-text) !important;
+    }}
+
+    div[data-testid="stDataFrame"] {{
+        background: var(--vw-white) !important;
+    }}
+
+    /* Chat messages (Copiloto IA) */
+    div[data-testid="stChatMessageContent"],
+    div[data-testid="stChatMessageContent"] * {{
+        color: var(--vw-text) !important;
+    }}
+
+    div[data-testid="stChatInput"] textarea {{
+        color: var(--vw-text) !important;
+        -webkit-text-fill-color: var(--vw-text) !important;
+        background: var(--vw-white) !important;
+    }}
+
+    /* Captions (ex: "Rodagem 2026") */
+    [data-testid="stCaptionContainer"],
+    [data-testid="stCaptionContainer"] * {{
+        color: var(--vw-text-muted) !important;
+    }}
+
+    /* Alertas padrão do Streamlit (info/warning/success/error) */
+    div[data-testid="stAlert"] * {{
+        color: var(--vw-text) !important;
+    }}
+
+    /* Expander */
+    div[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary * {{
+        color: var(--vw-navy) !important;
+    }}
+
     /* Cabeçalho institucional fixo */
     .vw-topbar {{
         display: flex;
@@ -149,10 +254,10 @@ def inject_css():
         padding: 5px 12px;
         border-radius: 999px;
         font-size: 12px;
-        color: var(--vw-white);
+        color: var(--vw-white) !important;
     }}
 
-    /* Inputs */
+    /* Inputs (genérico) */
     input[type="text"], input[type="password"] {{
         border-radius: 8px !important;
     }}
@@ -160,7 +265,7 @@ def inject_css():
     /* Botões primários */
     .stButton > button {{
         background: var(--vw-navy);
-        color: var(--vw-white);
+        color: var(--vw-white) !important;
         border: none;
         border-radius: 8px;
         font-weight: 600;
@@ -170,12 +275,16 @@ def inject_css():
 
     .stButton > button:hover {{
         background: var(--vw-blue);
-        color: var(--vw-navy-dark);
+        color: var(--vw-navy-dark) !important;
+    }}
+
+    .stButton > button * {{
+        color: inherit !important;
     }}
 
     .stDownloadButton > button {{
         background: var(--vw-white);
-        color: var(--vw-navy);
+        color: var(--vw-navy) !important;
         border: 1.5px solid var(--vw-navy);
         border-radius: 8px;
         font-weight: 600;
@@ -183,7 +292,7 @@ def inject_css():
 
     .stDownloadButton > button:hover {{
         background: var(--vw-navy);
-        color: var(--vw-white);
+        color: var(--vw-white) !important;
     }}
 
     /* ============================= */
@@ -217,7 +326,7 @@ def inject_css():
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: var(--vw-blue);
+        color: var(--vw-blue) !important;
         font-weight: 700;
         margin-bottom: 6px;
     }}
@@ -225,6 +334,7 @@ def inject_css():
     .vw-card-title {{
         font-size: 15px;
         font-weight: 700;
+        color: var(--vw-white) !important;
         line-height: 1.3;
     }}
 
@@ -234,7 +344,7 @@ def inject_css():
         bottom: -6px;
         font-size: 90px;
         font-weight: 800;
-        color: rgba(255,255,255,0.07);
+        color: rgba(255,255,255,0.07) !important;
         line-height: 1;
     }}
 
@@ -243,7 +353,7 @@ def inject_css():
         border-radius: var(--vw-radius);
         padding: 18px 20px;
         background: #E9ECF1;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -263,13 +373,13 @@ def inject_css():
     .vw-link-card-title {{
         font-size: 14px;
         font-weight: 700;
-        color: var(--vw-navy);
+        color: var(--vw-navy) !important;
         margin-bottom: 4px;
     }}
 
     .vw-link-card-desc {{
         font-size: 12px;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         margin-bottom: 12px;
     }}
 
@@ -277,7 +387,7 @@ def inject_css():
         font-size: 11px;
         font-weight: 600;
         background: var(--vw-navy);
-        color: var(--vw-white);
+        color: var(--vw-white) !important;
         padding: 3px 10px;
         border-radius: 999px;
         white-space: nowrap;
@@ -310,13 +420,13 @@ def inject_css():
     .vw-login-title {{
         font-size: 21px;
         font-weight: 800;
-        color: var(--vw-navy);
+        color: var(--vw-navy) !important;
         margin-top: 2px;
     }}
 
     .vw-login-sub {{
         font-size: 12.5px;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         margin-bottom: 18px;
         letter-spacing: 0.2px;
     }}
@@ -1286,9 +1396,9 @@ def pagina_links_ferramentas():
             is_http = url.lower().startswith("http")
 
             if is_http:
-                link_html = f'<a class="vw-link-anchor" href="{url}" target="_blank">Abrir ↗</a>'
+                link_html = f'<a class="vw-link-anchor" href="{url}" target="_blank">Abrir ↗️</a>'
             else:
-                link_html = f'<span style="font-size:12px;opacity:.9;">{url}</span>'
+                link_html = f'<span style="font-size:12px;opacity:.9;color:var(--vw-text-muted);">{url}</span>'
 
             st.markdown(
                 f"""
@@ -1472,7 +1582,7 @@ def painel():
         botao_voltar()
 
         st.markdown("""
-                2<h2 style="color:#001E50;">
+                <h2 style="color:#001E50;">
                 🚗 Status Liberações ZP8
                 </h2>
                 """, unsafe_allow_html=True)
