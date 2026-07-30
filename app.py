@@ -75,7 +75,7 @@ def inject_css():
 
     html,
     body,
-    .stApp {
+    .stApp {{
         font-family: var(--vw-font) !important;
         color: var(--vw-text);
     }}
@@ -83,9 +83,9 @@ def inject_css():
     p,
     span,
     label,
-    div[data-testid="stMarkdownContainer"] {
+    div[data-testid="stMarkdownContainer"] {{
             color: var(--vw-text) !important;
-        }
+        }}
         
     .stApp {{
         background: var(--vw-bg);
