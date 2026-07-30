@@ -42,8 +42,7 @@ if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
 # ======================================================
 # IDENTIDADE VISUAL VOLKSWAGEN (design tokens)
 # ======================================================
-VW_LOGO_URL = 
-"https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
+VW_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
 
 # Paleta oficial: Navy #001E50 é a cor primária da marca VW.
 # Azul elétrico é usado como cor de destaque/ação (CTA), cinza neutro para fundo,
