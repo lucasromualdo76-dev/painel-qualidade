@@ -1155,12 +1155,16 @@ def Analise_Custo_Garantia():
     MIS12 × Coluna J ÷ 1000
     """)
 
+    st.markdown("### 📄 PDF AQUA")
+    
     pdf = st.file_uploader(
         "Upload PDF AQUA",
         type=["pdf"],
         key="pdf_garantia"
     )
 
+    st.markdown("### 📊 Excel Reparo")
+    
     excel = st.file_uploader(
         "Upload Excel Reparo",
         type=["xlsx"],
