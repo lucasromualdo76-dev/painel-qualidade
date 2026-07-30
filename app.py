@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import streamlit.components.v1 as components
 import base64
 from pathlib import Path
 from datetime import datetime, date
@@ -14,26 +13,31 @@ import pdfplumber
 
 
 # ======================================================
-# CONFIGURAÇÃO DO AZURE OPENAI
-# ======================================================
-client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2024-02-15-preview",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
-)
-DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
-
-# ======================================================
 # CONFIGURAÇÃO DA PÁGINA
 # ======================================================
 st.set_page_config(page_title="Painel de Qualidade", layout="wide")
 
+
+# ======================================================
+# CONFIGURAÇÃO DO AZURE OPENAI
+# ======================================================
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+
+client = None
+
+if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
+    client = AzureOpenAI(
+        api_key=AZURE_OPENAI_API_KEY,
+        api_version="2024-02-15-preview",
+        azure_endpoint=AZURE_OPENAI_ENDPOINT
+    )
+
+
 # ======================================================
 # CSS GLOBAL
 # ======================================================
-
-
-
 st.markdown("""
 <style>
 /* Input compacto */
@@ -57,7 +61,7 @@ div[data-testid="stHorizontalBlock"] {
     margin-bottom: 4px;
 }
 
-/* Badge do contato (embaixo do badge da data) */
+/* Badge do contato */
 .contato-suporte {
     position: fixed;
     top: 110px; 
@@ -70,8 +74,9 @@ div[data-testid="stHorizontalBlock"] {
     border-radius: 6px;
     font-family: Arial;
 }
+
 /* ============================= */
-/* ESTILO DOS CARDS NOVOS */
+/* ESTILO DOS CARDS */
 /* ============================= */
 
 .card-custom {
@@ -83,18 +88,15 @@ div[data-testid="stHorizontalBlock"] {
     transition: 0.2s;
 }
 
-/* efeito hover 🔥 */
 .card-custom:hover {
     transform: scale(1.03);
 }
 
-/* texto no topo */
 .card-title {
     font-size: 14px;
     font-weight: bold;
 }
 
-/* ✅ TEXTO "ACESSAR" NO CANTO INFERIOR */
 .card-bottom {
     position: absolute;
     bottom: 10px;
@@ -102,7 +104,6 @@ div[data-testid="stHorizontalBlock"] {
     font-size: 13px;
 }
 
-/* letra grande no fundo */
 .card-bg-letter {
     position: absolute;
     right: 10px;
@@ -112,7 +113,6 @@ div[data-testid="stHorizontalBlock"] {
     font-weight: bold;
 }
 
-/* ✅ FAZ O BOTÃO COBRIR O CARD */
 div[data-testid="stButton"] {
     position: relative;
 }
@@ -123,8 +123,9 @@ div[data-testid="stButton"] {
 </div>
 """, unsafe_allow_html=True)
 
+
 # ======================================================
-# USUÁRIOS (exemplo simples - ideal depois migrar p/ SSO)
+# USUÁRIOS
 # ======================================================
 USUARIOS = {
     "aannutb": "12345",
@@ -134,25 +135,29 @@ USUARIOS = {
     "admin": "admin"
 }
 
-# =========================================
+
+# ======================================================
 # PERMISSÕES DE ACESSO
-# =========================================
+# ======================================================
 PERMISSOES = {
-    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],  # acesso total
-    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],    # acesso total
+    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
+    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
 
     "ufcmart": ["ENTREGA VEICULOS QA"],
     "vyplfbt": ["ENTREGA VEICULOS QA"],
     "gibvvr7": ["ENTREGA VEICULOS QA"]
 }
 
+
 # ======================================================
 # SESSÃO
 # ======================================================
 if "logado" not in st.session_state:
     st.session_state.logado = False
+
 if "usuario" not in st.session_state:
     st.session_state.usuario = ""
+
 
 # ======================================================
 # DATA + KW
@@ -176,9 +181,11 @@ def aplicar_background_login():
             unsafe_allow_html=True
         )
 
+
 def data_kw_atual():
     hoje = datetime.now()
     return f"{hoje.strftime('%d/%m/%Y')} | KW {hoje.isocalendar().week}"
+
 
 def mostrar_data_kw():
     st.markdown(f"""
@@ -197,130 +204,150 @@ def mostrar_data_kw():
     </div>
     """, unsafe_allow_html=True)
 
+
 # ======================================================
 # CARRINHO
 # ======================================================
 def mostrar_carrinho_animado_painel():
     st.markdown("""
     <style>
-    .faixa-painel { height: 40px; overflow: hidden; }
+    .faixa-painel { 
+        height: 40px; 
+        overflow: hidden; 
+    }
+
     .carro {
         position: relative;
         font-size: 24px;
         animation: mover 12s linear infinite alternate;
     }
+
     @keyframes mover {
         from { left: 0; }
         to { left: calc(100% - 40px); }
     }
     </style>
+
     <div class="faixa-painel">
         <div class="carro">🚗</div>
     </div>
     """, unsafe_allow_html=True)
 
+
 # ======================================================
 # HELPERS EXCEL
 # ======================================================
 def _to_float_ptbr(value):
-    """Converte valores numéricos pt-BR e ignora textos."""
     if value is None:
         return None
+
     if isinstance(value, (int, float)):
         return float(value)
 
     s = str(value).strip()
+
     if not s:
         return None
 
     s = s.replace(".", "").replace(",", ".")
+
     try:
         return float(s)
-    except:
+    except Exception:
         return None
 
+
 def extrair_total_coluna_j_openpyxl(uploaded_file, sheet_name):
-    """
-    Extrai o TOTAL da Coluna J (coluna 10 no Excel) varrendo de baixo pra cima
-    e pegando o primeiro valor numérico encontrado.
-    """
     wb = load_workbook(io.BytesIO(uploaded_file.getvalue()), data_only=True)
     ws = wb[sheet_name]
 
-    col_j = 10  # J = 10
+    col_j = 10
+
     for r in range(ws.max_row, 0, -1):
         v = ws.cell(row=r, column=col_j).value
         num = _to_float_ptbr(v)
+
         if num is not None:
             return num
+
     return None
+
 
 def formatar_moeda_br(x):
     if x is None or (isinstance(x, float) and pd.isna(x)):
         return ""
+
     return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+
 # ======================================================
-# HELPERS PDF (MIS12 / MIS36)
+# HELPERS PDF
 # ======================================================
 def _to_float_ptbr_num(s):
-    """Converte número pt-BR do PDF (ex.: '108,4' -> 108.4)."""
     if s is None:
         return None
+
     if isinstance(s, (int, float)):
         return float(s)
 
     txt = str(s).strip()
+
     if not txt:
         return None
 
     txt = txt.replace(" ", "")
     txt = re.sub(r"[^0-9,\.\-]", "", txt)
+
     if not txt:
         return None
 
     txt = txt.replace(".", "").replace(",", ".")
+
     try:
         return float(txt)
-    except:
+    except Exception:
         return None
 
+
 def extrair_anos_pdf(file_bytes):
-    """Retorna anos HJ encontrados no PDF (1ª página)."""
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
                 return []
+
             text = pdf.pages[0].extract_text() or ""
+
     except Exception:
         return []
 
     t = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
     years = sorted({int(y) for y in re.findall(r"\b20\d{2}\b", t)})
+
     return years
 
+
 def extrair_titulo_pdf(file_bytes):
-    """
-    Extrai o título/código do relatório (ex.: 604-VW216-IND-CY21-24).
-    Funciona para os relatórios 604 (como os PDFs enviados).
-    """
-    # Ex.: 604-VW216-IND-CY21-24 ou 604-VW216-EUR-CY21-24
     pattern = re.compile(r"\b\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2}\b")
 
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
                 return None
+
             page = pdf.pages[0]
             text = page.extract_text() or ""
             text = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
 
             m = pattern.search(text)
+
             if m:
                 return m.group(0)
 
-            # fallback: procura "Nome do ficheiro 604-VW216-..."
-            m2 = re.search(r"\bNome do ficheiro\b\s+(\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2})\b", text)
+            m2 = re.search(
+                r"\bNome do ficheiro\b\s+(\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2})\b",
+                text
+            )
+
             if m2:
                 return m2.group(1)
 
@@ -329,53 +356,73 @@ def extrair_titulo_pdf(file_bytes):
 
     return None
 
+
 def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
-    """
-    Extrai MIS12 e MIS36 por ANO usando o TEXTO da 1ª página do PDF (estável p/ relatórios 604).
-    Retorna: {"ano": int, "MIS12": float|None, "MIS36": float|None, "anos_disponiveis": [..]}
-    """
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
-                return {"ano": int(ano_alvo), "MIS12": None, "MIS36": None, "anos_disponiveis": []}
+                return {
+                    "ano": int(ano_alvo),
+                    "MIS12": None,
+                    "MIS36": None,
+                    "anos_disponiveis": []
+                }
+
             text = pdf.pages[0].extract_text() or ""
+
     except Exception:
-        return {"ano": int(ano_alvo), "MIS12": None, "MIS36": None, "anos_disponiveis": []}
+        return {
+            "ano": int(ano_alvo),
+            "MIS12": None,
+            "MIS36": None,
+            "anos_disponiveis": []
+        }
 
     t = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
 
-    # pega colunas MIS (ordem do cabeçalho)
     header_match = re.search(r"\bHJ\b(.*?\bMIS36\b)", t)
+
     if header_match:
         header_part = header_match.group(1)
         mis_cols = re.findall(r"\bMIS\d+\b", header_part)
     else:
         mis_cols = re.findall(r"\bMIS\d+\b", t)
 
-    # remove duplicados preservando ordem
     seen = set()
     mis_cols = [m for m in mis_cols if not (m in seen or seen.add(m))]
 
-    # anos disponíveis
     years = sorted({int(y) for y in re.findall(r"\b20\d{2}\b", t)})
 
     ano = int(ano_alvo)
-    if ano not in years:
-        return {"ano": ano, "MIS12": None, "MIS36": None, "anos_disponiveis": years}
 
-    # bloco do ano até próximo ano ou "Difere" ou "HJ Troca"
+    if ano not in years:
+        return {
+            "ano": ano,
+            "MIS12": None,
+            "MIS36": None,
+            "anos_disponiveis": years
+        }
+
     pattern = rf"\b{ano}\b(.*?)(?=\b20\d{{2}}\b|\bDifere\b|\bHJ\b\s*Troca\b)"
     m = re.search(pattern, t)
+
     if not m:
-        return {"ano": ano, "MIS12": None, "MIS36": None, "anos_disponiveis": years}
+        return {
+            "ano": ano,
+            "MIS12": None,
+            "MIS36": None,
+            "anos_disponiveis": years
+        }
 
     block = m.group(1)
 
     nums = re.findall(r"-?\d+(?:\.\d{3})*,\d+|-?\d+,\d+", block)
     vals = [_to_float_ptbr_num(n) for n in nums]
 
-    # mapeia por posição: MIS0->vals[0], MIS1->vals[1], ...
-    mapping = {mis_cols[i]: (vals[i] if i < len(vals) else None) for i in range(len(mis_cols))}
+    mapping = {
+        mis_cols(vals[i] if i < len(vals) else None)
+        for i in range(len(mis_cols))
+    }
 
     return {
         "ano": ano,
@@ -421,6 +468,7 @@ def aba_agendamento_veiculos():
         }
 
     c_h, c_u, c_d, c_s = st.columns([2, 3, 5, 2])
+
     c_h.markdown("**Horário**")
     c_u.markdown("**Usuário**")
     c_d.markdown("**Descrição**")
@@ -432,8 +480,8 @@ def aba_agendamento_veiculos():
         dados = st.session_state.agenda_veiculos[chave_dia][h]
 
         col1, col2, col3, col4 = st.columns([2, 3, 5, 2])
-        col1.write(h)
 
+        col1.write(h)
         col2.write(dados["usuario"] if dados["salvo"] else "")
 
         dados["descricao"] = col3.text_input(
@@ -462,10 +510,19 @@ def aba_agendamento_veiculos():
 # COPILOTO IA
 # ======================================================
 def responder_dashboard(pergunta, historico=None):
+    if client is None:
+        return "⚠️ Azure OpenAI não configurado. Verifique AZURE_OPENAI_API_KEY e AZURE_OPENAI_ENDPOINT."
+
     if not DEPLOYMENT:
         return "⚠️ DEPLOYMENT não configurado. Defina AZURE_OPENAI_DEPLOYMENT."
 
-    mensagens = [{"role": "system", "content": "Especialista em Qualidade Automotiva VW. Seja objetivo e claro."}]
+    mensagens = [
+        {
+            "role": "system",
+            "content": "Especialista em Qualidade Automotiva VW. Seja objetivo e claro."
+        }
+    ]
+
     if historico:
         mensagens.extend(historico)
 
@@ -477,25 +534,18 @@ def responder_dashboard(pergunta, historico=None):
         temperature=0.3,
         max_tokens=300
     )
+
     return resp.choices[0].message.content
 
-def pagina_input_budget_gmp21():
 
+def pagina_input_budget_gmp21():
     st.subheader("🔎 Consulta de Milestone (GMP21)")
 
-    # ==================================
-    # PROJETO
-    # ==================================
     modelo = st.selectbox(
         "Projeto / Plataforma",
-        [
-            "Plataformas - Milestone"
-        ]
+        ["Plataformas - Milestone"]
     )
 
-    # ==================================
-    # ANO E MÊS
-    # ==================================
     col1, col2 = st.columns(2)
 
     with col1:
@@ -504,9 +554,6 @@ def pagina_input_budget_gmp21():
     with col2:
         mes = st.selectbox("Mês", list(range(1, 13)))
 
-    # ==================================
-    # TIPO MILESTONE
-    # ==================================
     tipo_milestone = st.selectbox(
         "Tipo de Milestone",
         ["PLATAFORMA", "HUT", "MOTOR"]
@@ -520,11 +567,7 @@ def pagina_input_budget_gmp21():
 
     milestone = st.selectbox("Milestone", mapa_milestones[tipo_milestone])
 
-    # ==================================
-    # 🔥 MAPA TEMPO
-    # ==================================
     mapa_tempo = {
-
         "PLATAFORMA": {
             (2027, 3): "PM/PP",
             (2027, 6): "PD/ZV",
@@ -537,7 +580,7 @@ def pagina_input_budget_gmp21():
             (2030, 3): "PVS",
             (2030, 8): "O-S",
             (2031, 1): "SOP",
-            (2031, 4): "ME",
+            (2031, 4): "ME"
         },
 
         "HUT": {
@@ -553,7 +596,7 @@ def pagina_input_budget_gmp21():
             (2030, 3): "PVS",
             (2030, 8): "O-S",
             (2031, 1): "SOP",
-            (2031, 4): "ME",
+            (2031, 4): "ME"
         },
 
         "MOTOR": {
@@ -566,76 +609,84 @@ def pagina_input_budget_gmp21():
             (2029, 12): "VFF-A",
             (2030, 2): "PVS-A",
             (2030, 7): "O-S A",
-            (2030, 12): "SOP-A",
+            (2030, 12): "SOP-A"
         }
     }
 
-    # ==================================
-    # ✅ VALIDAÇÃO
-    # ==================================
     milestone_esperado = mapa_tempo.get(tipo_milestone, {}).get((ano, mes))
 
     if milestone_esperado:
-
         if milestone_esperado != milestone:
             st.warning(
                 f"⚠️ Para {mes}/{ano} o correto é {milestone_esperado} ({tipo_milestone})"
             )
         else:
             st.success("✅ Milestone correto")
-
     else:
         st.info("ℹ️ Esse mês não possui milestone definido")
-
 
 
 def pagina_copiloto_ia():
     st.subheader("🤖 Copiloto IA")
 
-    with st.expander("🔎 Diagnóstico Azure OpenAI (clique para abrir)", expanded=False):
-        st.write("AZURE_OPENAI_ENDPOINT:", "✅ OK" if os.getenv("AZURE_OPENAI_ENDPOINT") else "❌ VAZIO")
-        st.write("AZURE_OPENAI_API_KEY:", "✅ OK" if os.getenv("AZURE_OPENAI_API_KEY") else "❌ VAZIO")
-        st.write("AZURE_OPENAI_DEPLOYMENT:", os.getenv("AZURE_OPENAI_DEPLOYMENT") or "❌ VAZIO")
+    with st.expander("🔎 Diagnóstico Azure OpenAI", expanded=False):
+        st.write("AZURE_OPENAI_ENDPOINT:", "✅ OK" if AZURE_OPENAI_ENDPOINT else "❌ VAZIO")
+        st.write("AZURE_OPENAI_API_KEY:", "✅ OK" if AZURE_OPENAI_API_KEY else "❌ VAZIO")
+        st.write("AZURE_OPENAI_DEPLOYMENT:", DEPLOYMENT or "❌ VAZIO")
 
         if st.button("🧪 Testar conexão com Azure OpenAI"):
             try:
-                test = client.chat.completions.create(
-                    model=DEPLOYMENT,
-                    messages=[{"role": "user", "content": "Responda apenas: OK"}],
-                    max_tokens=10,
-                    temperature=0
-                )
-                st.success("✅ Conectou! Resposta: " + test.choices[0].message.content)
+                if client is None:
+                    st.error("❌ Azure OpenAI não configurado.")
+                else:
+                    test = client.chat.completions.create(
+                        model=DEPLOYMENT,
+                        messages=[{"role": "user", "content": "Responda apenas: OK"}],
+                        max_tokens=10,
+                        temperature=0
+                    )
+
+                    st.success("✅ Conectou! Resposta: " + test.choices[0].message.content)
+
             except Exception as e:
                 st.error("❌ Falhou ao chamar Azure OpenAI.")
                 st.exception(e)
 
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = [
-            {"role": "assistant", "content": "Olá! Posso ajudar com KPIs, processos e dúvidas do time de Qualidade."}
+            {
+                "role": "assistant",
+                "content": "Olá! Posso ajudar com KPIs, processos e dúvidas do time de Qualidade."
+            }
         ]
 
     for m in st.session_state.chat_messages:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
-    prompt = st.chat_input("Digite sua pergunta…")
+    prompt = st.chat_input("Digite sua pergunta...")
+
     if prompt:
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
+
         with st.chat_message("user"):
             st.markdown(prompt)
 
         try:
             with st.chat_message("assistant"):
                 with st.spinner("Pensando..."):
-                    historico = [x for x in st.session_state.chat_messages if x["role"] in ("user", "assistant")]
+                    historico = [
+                        x for x in st.session_state.chat_messages
+                        if x["role"] in ("user", "assistant")
+                    ]
+
                     answer = responder_dashboard(prompt, historico=historico)
                     st.markdown(answer)
 
             st.session_state.chat_messages.append({"role": "assistant", "content": answer})
 
         except Exception as e:
-            st.error("❌ Erro ao chamar o Azure OpenAI (veja detalhes abaixo).")
+            st.error("❌ Erro ao chamar o Azure OpenAI.")
             st.exception(e)
 
 
@@ -645,14 +696,12 @@ def pagina_copiloto_ia():
 def Comparativo_Custo_Reparo_Prognose():
     st.subheader("🧮 Custo Médio de Reparo")
 
-    st.markdown(
-        """
-        **Como funciona:** envie o Excel (com as abas dos projetos) e o sistema irá capturar
-        o **último valor numérico** encontrado na **Coluna J** de cada aba (TOTAL) e comparar.
-        
-        ⚠️ Se o total em J for fórmula, **salve a planilha** antes de enviar.
-        """
-    )
+    st.markdown("""
+    **Como funciona:** envie o Excel com as abas dos projetos e o sistema irá capturar
+    o **último valor numérico** encontrado na **Coluna J** de cada aba e comparar.
+
+    ⚠️ Se o total em J for fórmula, salve a planilha antes de enviar.
+    """)
 
     arquivo = st.file_uploader("📄 Upload da planilha Excel", type=["xlsx", "xls"])
 
@@ -663,6 +712,7 @@ def Comparativo_Custo_Reparo_Prognose():
     try:
         wb = load_workbook(io.BytesIO(arquivo.getvalue()), data_only=True)
         abas = wb.sheetnames
+
     except Exception as e:
         st.error("Não foi possível abrir a planilha. Verifique se o arquivo não está corrompido.")
         st.exception(e)
@@ -672,7 +722,7 @@ def Comparativo_Custo_Reparo_Prognose():
     default_sel = sugestao[:3] if len(sugestao) >= 3 else abas[:3]
 
     abas_sel = st.multiselect(
-        "Selecione as abas (projetos) para comparar",
+        "Selecione as abas para comparar",
         options=abas,
         default=default_sel
     )
@@ -684,8 +734,10 @@ def Comparativo_Custo_Reparo_Prognose():
     st.divider()
 
     resultados = []
+
     for aba in abas_sel:
         total_j = extrair_total_coluna_j_openpyxl(arquivo, aba)
+
         resultados.append({
             "Projeto/Aba": aba,
             "Total Coluna J": total_j
@@ -696,20 +748,36 @@ def Comparativo_Custo_Reparo_Prognose():
     if df["Total Coluna J"].notna().any():
         maxv = df["Total Coluna J"].max()
         minv = df["Total Coluna J"].min()
+
         df["Diferença p/ Máx"] = maxv - df["Total Coluna J"]
         df["Diferença p/ Mín"] = df["Total Coluna J"] - minv
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Maior Total (J)", formatar_moeda_br(df["Total Coluna J"].max() if df["Total Coluna J"].notna().any() else None))
-    col2.metric("Menor Total (J)", formatar_moeda_br(df["Total Coluna J"].min() if df["Total Coluna J"].notna().any() else None))
-    col3.metric("Delta (Máx - Mín)", formatar_moeda_br(
-        (df["Total Coluna J"].max() - df["Total Coluna J"].min())
-        if df["Total Coluna J"].notna().any() else None
-    ))
+
+    col1.metric(
+        "Maior Total (J)",
+        formatar_moeda_br(df["Total Coluna J"].max() if df["Total Coluna J"].notna().any() else None)
+    )
+
+    col2.metric(
+        "Menor Total (J)",
+        formatar_moeda_br(df["Total Coluna J"].min() if df["Total Coluna J"].notna().any() else None)
+    )
+
+    col3.metric(
+        "Delta (Máx - Mín)",
+        formatar_moeda_br(
+            (df["Total Coluna J"].max() - df["Total Coluna J"].min())
+            if df["Total Coluna J"].notna().any()
+            else None
+        )
+    )
 
     st.markdown("### ✅ Comparativo Custo de Reparo")
+
     df_view = df.copy()
     df_view["Total Coluna J"] = df_view["Total Coluna J"].apply(formatar_moeda_br)
+
     if "Diferença p/ Máx" in df_view.columns:
         df_view["Diferença p/ Máx"] = df["Diferença p/ Máx"].apply(formatar_moeda_br)
         df_view["Diferença p/ Mín"] = df["Diferença p/ Mín"].apply(formatar_moeda_br)
@@ -717,29 +785,41 @@ def Comparativo_Custo_Reparo_Prognose():
     st.dataframe(df_view, use_container_width=True)
 
     st.divider()
-    st.markdown("### 📊 Visual (Totais da Coluna J)")
-    df_plot = df.dropna(subset=["Total Coluna J"]).copy()
-    if len(df_plot):
-        fig = px.bar(df_plot, x="Projeto/Aba", y="Total Coluna J", text="Total Coluna J")
-        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
-        
-        fig.update_layout(
-        barmode='group',
-        title="Performance 2026 | Total de veículos liberados",
-        uniformtext_minsize=8,
-        uniformtext_mode='hide',
-        plot_bgcolor="#030712",
-        paper_bgcolor="#030712",
-        font=dict(color="white"),
-        hovermode="x unified"
+    st.markdown("### 📊 Visual")
 
-)
+    df_plot = df.dropna(subset=["Total Coluna J"]).copy()
+
+    if len(df_plot):
+        fig = px.bar(
+            df_plot,
+            x="Projeto/Aba",
+            y="Total Coluna J",
+            text="Total Coluna J"
+        )
+
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside"
+        )
+
+        fig.update_layout(
+            barmode="group",
+            title="Comparativo Custo Médio de Reparo",
+            uniformtext_minsize=8,
+            uniformtext_mode="hide",
+            plot_bgcolor="#030712",
+            paper_bgcolor="#030712",
+            font=dict(color="white"),
+            hovermode="x unified"
+        )
 
         st.plotly_chart(fig, use_container_width=True)
+
     else:
         st.warning("Não foi possível localizar valores numéricos na Coluna J das abas selecionadas.")
 
     st.divider()
+
     st.download_button(
         "Baixar comparativo (CSV)",
         data=df.to_csv(index=False).encode("utf-8"),
@@ -749,21 +829,21 @@ def Comparativo_Custo_Reparo_Prognose():
 
 
 # ======================================================
-# COMPARATIVO PDF (MIS12 / MIS36)
+# COMPARATIVO PDF
 # ======================================================
 def Comparativo_MIS_PDF():
     st.subheader("📄 Comparativo MIS12 e MIS36 (PDF)")
 
     st.markdown("""
-**Como funciona:** envie **2 PDFs** (A e B). O sistema identifica o **título/código** do relatório
-e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
-
-✅ Este modo funciona muito bem para os relatórios 604 (texto selecionável).  
-""")
+    **Como funciona:** envie **2 PDFs**. O sistema identifica o título/código do relatório
+    e extrai os valores **MIS12** e **MIS36** do ano selecionado.
+    """)
 
     colA, colB = st.columns(2)
+
     with colA:
         pdf_a = st.file_uploader("Upload PDF A", type=["pdf"], key="pdf_a")
+
     with colB:
         pdf_b = st.file_uploader("Upload PDF B", type=["pdf"], key="pdf_b")
 
@@ -774,65 +854,83 @@ e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
     bytes_a = pdf_a.getvalue()
     bytes_b = pdf_b.getvalue()
 
-    # Identificação
     with st.spinner("Lendo títulos/códigos dos PDFs..."):
         titulo_a = extrair_titulo_pdf(bytes_a) or "Não identificado"
         titulo_b = extrair_titulo_pdf(bytes_b) or "Não identificado"
 
-    st.markdown("### 🏷️ Identificação dos PDFs (para diferenciar)")
+    st.markdown("### 🏷️ Identificação dos PDFs")
+
     c1, c2 = st.columns(2)
+
     c1.info(f"**PDF A:** {titulo_a}")
     c2.info(f"**PDF B:** {titulo_b}")
 
-    # anos disponíveis (união dos 2 PDFs)
     anos_disp = sorted(set(extrair_anos_pdf(bytes_a)) | set(extrair_anos_pdf(bytes_b)))
+
     if not anos_disp:
-        st.error("Não foi possível identificar anos no PDF. Verifique se o PDF tem texto extraível.")
+        st.error("Não foi possível identificar anos no PDF.")
         return
 
     default_ano = max(anos_disp)
-    ano_sel = st.selectbox("Ano para comparação (HJ)", options=anos_disp, index=anos_disp.index(default_ano))
+
+    ano_sel = st.selectbox(
+        "Ano para comparação",
+        options=anos_disp,
+        index=anos_disp.index(default_ano)
+    )
 
     with st.spinner("Extraindo MIS12/MIS36 do PDF A..."):
         res_a = extrair_mis12_mis36_por_ano_pdf(bytes_a, int(ano_sel))
+
     with st.spinner("Extraindo MIS12/MIS36 do PDF B..."):
         res_b = extrair_mis12_mis36_por_ano_pdf(bytes_b, int(ano_sel))
 
     def fmt_num(x):
         if x is None:
             return "—"
+
         return f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
     def delta(a, b):
         if a is None or b is None:
             return None
+
         return b - a
 
     def delta_pct(a, b):
         if a is None or b is None or a == 0:
             return None
+
         return (b - a) / a * 100.0
 
     d_mis12 = delta(res_a["MIS12"], res_b["MIS12"])
     p_mis12 = delta_pct(res_a["MIS12"], res_b["MIS12"])
+
     d_mis36 = delta(res_a["MIS36"], res_b["MIS36"])
     p_mis36 = delta_pct(res_a["MIS36"], res_b["MIS36"])
 
-    if res_a["MIS12"] is None or res_a["MIS36"] is None or res_b["MIS12"] is None or res_b["MIS36"] is None:
-        st.warning("Algum valor não foi encontrado para este ano em um dos PDFs (pode estar ausente no relatório).")
+    if (
+        res_a["MIS12"] is None
+        or res_a["MIS36"] is None
+        or res_b["MIS12"] is None
+        or res_b["MIS36"] is None
+    ):
+        st.warning("Algum valor não foi encontrado para este ano em um dos PDFs.")
         st.write("Anos disponíveis PDF A:", res_a.get("anos_disponiveis", []))
         st.write("Anos disponíveis PDF B:", res_b.get("anos_disponiveis", []))
 
     st.divider()
-    st.markdown("### ✅ Métricas (Ano selecionado)")
+    st.markdown("### ✅ Métricas")
 
     c1, c2, c3, c4 = st.columns(4)
+
     c1.metric("MIS12 - PDF A", fmt_num(res_a["MIS12"]))
     c2.metric("MIS12 - PDF B", fmt_num(res_b["MIS12"]))
     c3.metric("Δ MIS12 (B - A)", fmt_num(d_mis12))
     c4.metric("Δ% MIS12", "—" if p_mis12 is None else f"{p_mis12:.1f}%")
 
     c1, c2, c3, c4 = st.columns(4)
+
     c1.metric("MIS36 - PDF A", fmt_num(res_a["MIS36"]))
     c2.metric("MIS36 - PDF B", fmt_num(res_b["MIS36"]))
     c3.metric("Δ MIS36 (B - A)", fmt_num(d_mis36))
@@ -842,27 +940,62 @@ e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
     st.markdown("### 📋 Tabela")
 
     df = pd.DataFrame([
-        {"PDF": "A", "Título": titulo_a, "Ano": int(ano_sel), "MIS12": res_a["MIS12"], "MIS36": res_a["MIS36"]},
-        {"PDF": "B", "Título": titulo_b, "Ano": int(ano_sel), "MIS12": res_b["MIS12"], "MIS36": res_b["MIS36"]},
+        {
+            "PDF": "A",
+            "Título": titulo_a,
+            "Ano": int(ano_sel),
+            "MIS12": res_a["MIS12"],
+            "MIS36": res_a["MIS36"]
+        },
+        {
+            "PDF": "B",
+            "Título": titulo_b,
+            "Ano": int(ano_sel),
+            "MIS12": res_b["MIS12"],
+            "MIS36": res_b["MIS36"]
+        }
     ])
 
     df_view = df.copy()
     df_view["MIS12"] = df_view["MIS12"].apply(fmt_num)
     df_view["MIS36"] = df_view["MIS36"].apply(fmt_num)
+
     st.dataframe(df_view, use_container_width=True)
 
     st.markdown("### 📊 Visual")
+
     df_plot = df.dropna(subset=["MIS12", "MIS36"], how="all").copy()
+
     if len(df_plot):
-        df_melt = df_plot.melt(id_vars=["PDF", "Título", "Ano"], value_vars=["MIS12", "MIS36"],
-                               var_name="MIS", value_name="Valor")
-        fig = px.bar(df_melt, x="MIS", y="Valor", color="PDF", barmode="group", text="Valor", hover_data=["Título"])
-        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+        df_melt = df_plot.melt(
+            id_vars=["PDF", "Título", "Ano"],
+            value_vars=["MIS12", "MIS36"],
+            var_name="MIS",
+            value_name="Valor"
+        )
+
+        fig = px.bar(
+            df_melt,
+            x="MIS",
+            y="Valor",
+            color="PDF",
+            barmode="group",
+            text="Valor",
+            hover_data=["Título"]
+        )
+
+        fig.update_traces(
+            texttemplate="%{text:.2f}",
+            textposition="outside"
+        )
+
         st.plotly_chart(fig, use_container_width=True)
+
     else:
         st.info("Sem valores suficientes para plotar.")
 
     st.divider()
+
     st.download_button(
         "Baixar comparativo (CSV)",
         data=df.to_csv(index=False).encode("utf-8"),
@@ -875,8 +1008,6 @@ e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
 # LOGIN
 # ======================================================
 def tela_login():
-
-    # CSS
     st.markdown("""
     <style>
     .login-box {
@@ -885,11 +1016,9 @@ def tela_login():
         margin-top: 60px;
         padding: 20px;
         border-radius: 12px;
-
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-
         box-shadow: 0px 4px 15px rgba(0,0,0,0.25);
         text-align: center;
         border: 1px solid rgba(255,255,255,0.2);
@@ -909,26 +1038,22 @@ def tela_login():
     }
 
     .logo img {
-        width: 45px;
+        width: 65px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # ✅ CAIXA VISUAL (faltava isso)
-    
     st.markdown("""
     <div class="login-box">
-    <div class="logo">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
-    </div>
-    <div class="titulo">Design for Quality</div>
-    <div class="subtitulo">Sistema de Qualidade</div>
+        <div class="logo">
+            https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg
+        </div>
+        <div class="titulo">Design for Quality</div>
+        <div class="subtitulo">Sistema de Qualidade</div>
     </div>
     """, unsafe_allow_html=True)
 
-
-    # ✅ FORM LOGIN (mantém funcional)
-    col1, col2, col3 = st.columns([3,4,3])
+    col1, col2, col3 = st.columns([3, 4, 3])
 
     with col2:
         with st.form("login"):
@@ -936,14 +1061,19 @@ def tela_login():
             pwd = st.text_input("Senha", type="password")
 
             if st.form_submit_button("Entrar"):
-                if user.lower() in USUARIOS and USUARIOS[user.lower()] == pwd:
+                user = user.lower().strip()
+
+                if user in USUARIOS and USUARIOS[user] == pwd:
                     st.session_state.logado = True
-                    st.session_state.usuario = user.lower()
+                    st.session_state.usuario = user
                     st.rerun()
                 else:
                     st.error("Usuário ou senha inválidos")
 
 
+# ======================================================
+# LINKS E FERRAMENTAS
+# ======================================================
 def pagina_links_ferramentas():
     st.subheader("🔗 Links e Ferramentas do Dia a Dia")
 
@@ -955,12 +1085,10 @@ def pagina_links_ferramentas():
             "tag": "BI"
         },
         {
-
             "nome": "SharePoint - Qualidade",
             "url": "https://volkswagengroup.sharepoint.com/:f:/r/sites/QAProttipos/Shared%20Documents/General?csf=1&web=1&e=eNV37D",
             "desc": "Documentos e procedimentos do time",
             "tag": "Docs"
-
         },
         {
             "nome": "Teams - Squad QA",
@@ -971,12 +1099,13 @@ def pagina_links_ferramentas():
         {
             "nome": "Pasta de Trabalho - Rede",
             "url": r"G:\ANCBQD01\S1004_B-QP_ Plan_Central Novos_Projetos\S2043_B-QP_VSC_QA_&_Eng_Prototipo\DESIGN FOR QUALITY",
-            "desc": "Atalho para pasta da rede (copiar caminho)",
+            "desc": "Atalho para pasta da rede",
             "tag": "Files"
-        },
+        }
     ]
 
     colA, colB, colC = st.columns(3)
+
     cols = [colA, colB, colC]
 
     for i, r in enumerate(recursos):
@@ -984,11 +1113,10 @@ def pagina_links_ferramentas():
             url = r["url"]
             is_http = url.lower().startswith("http")
 
-            link_html = (
-                f'<a href="{url}" target="_blank" style="text-decoration:none;font-weight:600;">Abrir ↗</a>'
-                if is_http else
-                f'<span style="font-size:12px;opacity:.9;">{url}</span>'
-            )
+            if is_http:
+                link_html = f'{url}Abrir ↗</a>'
+            else:
+                link_html = f'<span style="font-size:12px;opacity:.9;">{url}</span>'
 
             st.markdown(
                 f"""
@@ -1007,10 +1135,16 @@ def pagina_links_ferramentas():
             )
 
             if not is_http:
-                st.text_input("Copiar caminho:", value=url, label_visibility="collapsed", key=f"path_{i}")
+                st.text_input(
+                    "Copiar caminho:",
+                    value=url,
+                    label_visibility="collapsed",
+                    key=f"path_{i}"
+                )
+
 
 # ======================================================
-# PÁGINA: TEMPLATES
+# TEMPLATES
 # ======================================================
 def pagina_templates():
     st.subheader("📄 Templates e Arquivos")
@@ -1019,13 +1153,16 @@ def pagina_templates():
     pasta.mkdir(exist_ok=True)
 
     arquivos = sorted(pasta.glob("*"))
+
     if not arquivos:
-        st.info("Nenhum arquivo em /templates ainda. Coloque aqui os modelos (xlsx, pptx, pdf).")
+        st.info("Nenhum arquivo em /templates ainda. Coloque aqui os modelos.")
         return
 
     for arq in arquivos:
         col1, col2 = st.columns([7, 2])
+
         col1.write(f"📌 {arq.name}")
+
         with col2:
             st.download_button(
                 "Baixar",
@@ -1035,43 +1172,44 @@ def pagina_templates():
                 key=f"dl_{arq.name}"
             )
 
-# ======================================================
-# PAINEL
-# ======================================================
-# =========================================
-# HELPERS DE NAVEGAÇÃO
-# =========================================
 
+# ======================================================
+# HELPERS DE NAVEGAÇÃO
+# ======================================================
 def sync_pagina_com_url():
     if "pagina_atual" not in st.session_state:
         if "pagina" in st.query_params:
             pagina_url = st.query_params["pagina"]
+
             if isinstance(pagina_url, list):
                 pagina_url = pagina_url[0]
+
             st.session_state.pagina_atual = pagina_url
+
         else:
             st.session_state.pagina_atual = "HOME"
+
 
 def ir_para(pagina):
     st.session_state.pagina_atual = pagina
     st.query_params.update({"pagina": pagina})
     st.rerun()
 
+
 def botao_voltar():
     if st.button("⬅️ Voltar", key="btn_voltar"):
         ir_para("HOME")
 
 
-
-# =========================================
+# ======================================================
 # PAINEL PRINCIPAL
-# =========================================
-
+# ======================================================
 def painel():
-
     sync_pagina_com_url()
     mostrar_data_kw()
+
     st.title("Design for Quality")
+
     mostrar_carrinho_animado_painel()
 
     if "subpagina" not in st.session_state:
@@ -1081,9 +1219,6 @@ def painel():
     usuario = st.session_state.get("usuario", "")
     permissoes = PERMISSOES.get(usuario, [])
 
-    # ======================
-    # CSS DOS CARDS
-    # ======================
     st.markdown("""
     <style>
     .card-custom {
@@ -1093,31 +1228,31 @@ def painel():
         position: relative;
         color: black;
         cursor: pointer;
-}
+    }
 
     .card-orange {
         background: linear-gradient(135deg, #ffb37a, #ff7a00);
-}
+    }
 
     .card-blue {
         background: linear-gradient(135deg, #64b5f6, #1565c0);
         color: white;
-}
+    }
 
     .card-red {
         background: linear-gradient(135deg, #e53935, #8e0000);
         color: white;
-}
+    }
 
     .card-black {
         background: linear-gradient(135deg, #444, #000);
         color: white;
-}
+    }
 
     .card-title {
         font-size: 14px;
         font-weight: bold;
-}
+    }
 
     .card-center {
         position: absolute;
@@ -1125,7 +1260,7 @@ def painel():
         left: 50%;
         transform: translate(-50%, -50%);
         font-size: 16px;
-}
+    }
 
     .card-bg-letter {
         position: absolute;
@@ -1134,7 +1269,7 @@ def painel():
         font-size: 110px;
         color: rgba(255,255,255,0.2);
         font-weight: bold;
-}
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -1142,7 +1277,6 @@ def painel():
     # HOME
     # ======================
     if pagina == "HOME":
-
         st.markdown("""
         <h1 style="text-align: center;">Acesso Rápido</h1>
         <hr style="width: 200px; margin: auto;">
@@ -1150,63 +1284,56 @@ def painel():
 
         col1, col2, col3, col4, col5 = st.columns(5)
 
-        
-       #    STREIFELIST
         with col1:
-
             if "OVERDUE" in permissoes:
-
                 st.markdown("""
                 <div class='card-custom card-orange'>
-                <div class='card-title'>Overdue Streifenlist</div>
-                <div class='card-bottom'>Acessar</div>
-                <div class='card-bg-letter'>O</div>
-            </div>
-            """, unsafe_allow_html=True)
+                    <div class='card-title'>Overdue Streifenlist</div>
+                    <div class='card-bottom'>Acessar</div>
+                    <div class='card-bg-letter'>O</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-                if st.button("Acessar", key="overdue"):   # 👈 botão logo abaixo
+                if st.button("Acessar", key="overdue"):
                     st.session_state.pagina_atual = "OVERDUE"
                     st.rerun()
             else:
                 st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        # ✅ COLUNA 2 (KPM)
         with col2:
             if "KPM" in permissoes:
                 st.markdown("""
                 <div class='card-custom card-black'>
-                <div class='card-title'>KPI KPM</div>
-                <div class='card-center'>Acessar</div>
-                <div class='card-bg-letter'>K</div>
-            </div>
-            """, unsafe_allow_html=True)
+                    <div class='card-title'>KPI KPM</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>K</div>
+                </div>
+                """, unsafe_allow_html=True)
+
                 if st.button("Acessar", key="kpm"):
                     st.session_state.pagina_atual = "KPM"
                     st.rerun()
             else:
                 st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        # ✅ COLUNA 3 (GMP21)
         with col3:
             if "GMP21" in permissoes:
-                
                 st.markdown("""
                 <div class='card-custom card-red'>
                     <div class='card-title'>Prognose GMP21</div>
                     <div class='card-center'>Acessar</div>
                     <div class='card-bg-letter'>G</div>
-            </div>
-            """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
+
                 if st.button("Acessar", key="gmp21"):
                     st.session_state.pagina_atual = "GMP21"
                     st.rerun()
             else:
                 st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        # ✅ COLUNA 4 (STATUS)
         with col4:
             if "STATUS" in permissoes:
-                
                 st.markdown("""
                 <div class='card-custom card-blue'>
                     <div class='card-title'>Análise Custo Reparo</div>
@@ -1214,13 +1341,13 @@ def painel():
                     <div class='card-bg-letter'>S</div>
                 </div>
                 """, unsafe_allow_html=True)
+
                 if st.button("Acessar", key="status"):
                     st.session_state.pagina_atual = "STATUS"
                     st.rerun()
             else:
                 st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        # ✅ COLUNA 5 (ENTREGA)
         with col5:
             if "ENTREGA VEICULOS QA" in permissoes:
                 st.markdown("""
@@ -1228,33 +1355,35 @@ def painel():
                     <div class='card-title'>Entrega Veículos</div>
                     <div class='card-center'>Acessar</div>
                     <div class='card-bg-letter'>E</div>
-            </div>
-            """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
+
                 if st.button("Acessar", key="entrega_veiculos_qa"):
                     st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
                     st.rerun()
             else:
                 st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-
     # ======================
-    # ENTREGA
+    # ENTREGA VEICULOS QA
     # ======================
-    
     elif pagina == "ENTREGA VEICULOS QA":
-
         botao_voltar()
-        
+
         st.markdown("""
         # 🚗 Status Liberações ZP8
         ### Rodagem 2026
         """)
 
-
         import plotly.graph_objects as go
-        import pandas as pd
 
-        df = pd.read_csv("dados_rodagem.csv")
+        try:
+            df = pd.read_csv("dados_rodagem.csv")
+
+        except FileNotFoundError:
+            st.error("Arquivo dados_rodagem.csv não encontrado.")
+            return
+
         df.columns = df.columns.str.strip()
         df.columns = ["Mes", "Prevista", "Liberados"]
 
@@ -1264,121 +1393,82 @@ def painel():
 
         fig = go.Figure()
 
+        fig.add_trace(go.Bar(
+            name="Rodagem Prevista",
+            x=meses,
+            y=prevista,
+            text=[v if v is not None else "" for v in prevista],
+            textposition="outside"
+        ))
 
         fig.add_trace(go.Bar(
-        name="Rodagem Prevista",
-        x=meses,
-        y=prevista,
-        text=[v if v is not None else "" for v in prevista],
-        textposition="outside"
-))
-
-        fig.add_trace(go.Bar(
-        name="Veículos Liberados",
-        x=meses,
-        y=liberados,
-        text=[v if v is not None else "" for v in liberados],
-        textposition="outside"
-))
-
+            name="Veículos Liberados",
+            x=meses,
+            y=liberados,
+            text=[v if v is not None else "" for v in liberados],
+            textposition="outside"
+        ))
 
         fig.update_layout(
-    margin=dict(b=80),
-
-    annotations=[
-        dict(
-            text="<b>2026</b>",
-            x=0.5,
-            y=-0.22,
-            xref="paper",
-            yref="paper",
-            showarrow=False,
-            font=dict(
-                size=18,
-                color="white"
-            )
+            margin=dict(b=80),
+            barmode="group",
+            plot_bgcolor="#030712",
+            paper_bgcolor="#030712",
+            font=dict(color="white"),
+            hovermode="x unified",
+            annotations=[
+                dict(
+                    text="<b>2026</b>",
+                    x=0.5,
+                    y=-0.22,
+                    xref="paper",
+                    yref="paper",
+                    showarrow=False,
+                    font=dict(
+                        size=18,
+                        color="white"
+                    )
+                )
+            ]
         )
-    ]
-)
-        
-        
-        col1, col2 = st.columns([3,1])
+
+        col1, col2 = st.columns([3, 1])
 
         with col1:
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-
             total_prevista = sum(v for v in prevista if v is not None)
             total_liberados = sum(v for v in liberados if v is not None)
 
+            percentual = (
+                (total_liberados / total_prevista) * 100
+                if total_prevista > 0
+                else 0
+            )
+
             st.markdown("### 📊 Totais")
-
-            percentual = (total_liberados / total_prevista) * 100 if total_prevista > 0 else 0
-
-            
-            if percentual >= 80:
-                st.success(f"✅ Rodagem dentro da meta ({percentual:.1f}%)")
-
-            elif percentual >= 50:
-                st.warning(f"⚠️ Atenção ({percentual:.1f}%)")
-
-            else:
-                st.error(f"🔴 Abaixo da meta ({percentual:.1f}%)")
-
 
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
             st.metric("🎯 % Liberação", f"{percentual:.1f}%")
 
-            restante = total_prevista - total_liberados
-
-            fig_pizza = go.Figure(data=[go.Pie(
-            labels=["Liberados", "Restante"],
-            values=[total_liberados, restante],
-            hole=0.5,
-            domain=dict(x=[0, 1], y=[0, 1])
-            )])
-
-            fig_pizza.update_traces(
-            textinfo="percent",
-            textposition="outside",
-            marker=dict(colors=["#1E88E5", "#90CAF9"])
-            )
-
-            
-            percentual = (total_liberados / total_prevista) * 100
-
-            fig_pizza.update_layout(
-                showlegend=False,
-                height=350,
-                annotations=[
-                    dict(
-                            text=f"<b>{percentual:.1f}%</b><br>Concluído",
-                            showarrow=False,
-                            font=dict(size=18,color="white")
-        )
-    ]
-)
-
-
-            st.plotly_chart(fig_pizza, use_container_width=True)
-
-
-
     # ======================
-    # OUTROS
+    # GMP21
     # ======================
     elif pagina == "GMP21":
-
         if "GMP21" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
+
         botao_voltar()
         st.subheader("GMP21 Budget")
+        pagina_input_budget_gmp21()
 
+    # ======================
+    # KPM
+    # ======================
     elif pagina == "KPM":
-    
         if "KPM" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1386,8 +1476,10 @@ def painel():
         botao_voltar()
         st.subheader("Dashboard KPM")
 
+    # ======================
+    # STATUS
+    # ======================
     elif pagina == "STATUS":
-
         if "STATUS" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1395,8 +1487,10 @@ def painel():
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
 
+    # ======================
+    # OVERDUE
+    # ======================
     elif pagina == "OVERDUE":
-
         if "OVERDUE" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1405,18 +1499,18 @@ def painel():
         st.subheader("Overdue Streifenlist Dashboard")
 
 
-# =========================================
+# ======================================================
 # LOGOUT
-# =========================================
+# ======================================================
 def logout():
     st.session_state.logado = False
     st.session_state.pagina_atual = "HOME"
     st.rerun()
 
 
-# =========================================
+# ======================================================
 # FLUXO PRINCIPAL DO APP
-# =========================================
+# ======================================================
 if st.session_state.get("logado", False):
     painel()
 else:
