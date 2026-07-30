@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit.components.v1 as components
 import base64
 from pathlib import Path
 from datetime import datetime, date
@@ -13,323 +14,117 @@ import pdfplumber
 
 
 # ======================================================
-# CONFIGURAÇÃO DA PÁGINA
-# ======================================================
-st.set_page_config(
-    page_title="Design for Quality | Volkswagen",
-    page_icon="🚗",
-    layout="wide"
-)
-
-
-# ======================================================
 # CONFIGURAÇÃO DO AZURE OPENAI
 # ======================================================
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version="2024-02-15-preview",
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+)
 DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-client = None
-
-if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
-    client = AzureOpenAI(
-        api_key=AZURE_OPENAI_API_KEY,
-        api_version="2024-02-15-preview",
-        azure_endpoint=AZURE_OPENAI_ENDPOINT
-    )
-
+# ======================================================
+# CONFIGURAÇÃO DA PÁGINA
+# ======================================================
+st.set_page_config(page_title="Painel de Qualidade", layout="wide")
 
 # ======================================================
-# IDENTIDADE VISUAL VOLKSWAGEN (design tokens)
+# CSS GLOBAL
 # ======================================================
-VW_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
 
-# Paleta oficial: Navy #001E50 é a cor primária da marca VW.
-# Azul elétrico é usado como cor de destaque/ação (CTA), cinza neutro para fundo,
-# e uma escala de cinza-texto para hierarquia tipográfica.
-VW_CSS_VARS = """
-:root {
-    --vw-navy: #001E50;
-    --vw-navy-dark: #001133;
-    --vw-navy-light: #0D4671;
-    --vw-blue: #00B0F0;
-    --vw-white: #FFFFFF;
-    --vw-bg: #F3F5F8;
-    --vw-border: #DCE1E8;
-    --vw-text: #1A1D22;
-    --vw-text-muted: #5B6472;
-    --vw-success: #0F9D58;
-    --vw-danger: #C8102E;
-    --vw-radius: 10px;
-    --vw-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+
+
+st.markdown("""
+<style>
+/* Input compacto */
+input[type="text"] {
+    height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
 }
-"""
 
+/* Botão compacto */
+button[data-testid="baseButton-secondary"],
+button[kind="secondary"] {
+    padding: 2px 10px !important;
+    font-size: 13px !important;
+    height: 32px !important;
+}
 
-def inject_css():
-    st.markdown(f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Reduz espaçamento entre linhas */
+div[data-testid="stHorizontalBlock"] {
+    gap: 8px;
+    margin-bottom: 4px;
+}
 
-    {VW_CSS_VARS}
+/* Badge do contato (embaixo do badge da data) */
+.contato-suporte {
+    position: fixed;
+    top: 110px; 
+    right: 15px;
+    z-index: 9999;
+    font-size: 13px;
+    color: #ffffff;
+    background: rgba(0,0,0,0.45);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: Arial;
+}
+/* ============================= */
+/* ESTILO DOS CARDS NOVOS */
+/* ============================= */
 
-    html,
-    body,
-    .stApp {{
-        font-family: var(--vw-font) !important;
-        color: var(--vw-text);
-    }}
-    h1, h2, h3, h4, h5, h6,
-    p,
-    span,
-    label,
-    div[data-testid="stMarkdownContainer"] {{
-            color: var(--vw-text) !important;
-        }}
-        
-    .stApp {{
-        background: var(--vw-bg);
-    }}
+.card-custom {
+    height: 150px;
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.2s;
+}
 
-    section[data-testid="stSidebar"] {{
-        background: var(--vw-navy);
-    }}
+/* efeito hover 🔥 */
+.card-custom:hover {
+    transform: scale(1.03);
+}
 
-    section[data-testid="stSidebar"] * {{
-        color: var(--vw-white) !important;
-    }}
+/* texto no topo */
+.card-title {
+    font-size: 14px;
+    font-weight: bold;
+}
 
-    /* Cabeçalho institucional fixo */
-    .vw-topbar {{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--vw-navy);
-        padding: 14px 28px;
-        border-radius: var(--vw-radius);
-        margin-bottom: 22px;
-        box-shadow: 0 2px 10px rgba(0,30,80,0.18);
-    }}
+/* ✅ TEXTO "ACESSAR" NO CANTO INFERIOR */
+.card-bottom {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    font-size: 13px;
+}
 
-    .vw-topbar-left {{
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }}
+/* letra grande no fundo */
+.card-bg-letter {
+    position: absolute;
+    right: 10px;
+    bottom: 0px;
+    font-size: 110px;
+    color: rgba(255,255,255,0.2);
+    font-weight: bold;
+}
 
-    .vw-topbar-left img {{
-        height: 30px;
-        filter: brightness(0) invert(1);
-    }}
+/* ✅ FAZ O BOTÃO COBRIR O CARD */
+div[data-testid="stButton"] {
+    position: relative;
+}
+</style>
 
-    .vw-topbar-title {{
-        color: var(--vw-white);
-        font-weight: 700;
-        font-size: 18px;
-        letter-spacing: 0.2px;
-    }}
-
-    .vw-topbar-sub {{
-        color: rgba(255,255,255,0.65);
-        font-size: 12px;
-        font-weight: 400;
-    }}
-
-    .vw-topbar-right {{
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        color: rgba(255,255,255,0.85);
-        font-size: 13px;
-    }}
-
-    .vw-chip {{
-        background: rgba(255,255,255,0.10);
-        border: 1px solid rgba(255,255,255,0.18);
-        padding: 5px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        color: var(--vw-white);
-    }}
-
-    /* Inputs */
-    input[type="text"], input[type="password"] {{
-        border-radius: 8px !important;
-    }}
-
-    /* Botões primários */
-    .stButton > button {{
-        background: var(--vw-navy);
-        color: var(--vw-white);
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 8px 18px;
-        transition: background 0.15s ease;
-    }}
-
-    .stButton > button:hover {{
-        background: var(--vw-blue);
-        color: var(--vw-navy-dark);
-    }}
-
-    .stDownloadButton > button {{
-        background: var(--vw-white);
-        color: var(--vw-navy);
-        border: 1.5px solid var(--vw-navy);
-        border-radius: 8px;
-        font-weight: 600;
-    }}
-
-    .stDownloadButton > button:hover {{
-        background: var(--vw-navy);
-        color: var(--vw-white);
-    }}
-
-    /* ============================= */
-    /* CARDS DE ACESSO RÁPIDO        */
-    /* ============================= */
-    .vw-card {{
-        height: 138px;
-        border-radius: var(--vw-radius);
-        padding: 18px 20px;
-        position: relative;
-        background: var(--vw-navy);
-        color: var(--vw-white);
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.06);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }}
-
-    .vw-card:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(0,30,80,0.22);
-    }}
-
-    .vw-card-accent {{
-        position: absolute;
-        top: 0; left: 0;
-        width: 4px; height: 100%;
-        background: var(--vw-blue);
-    }}
-
-    .vw-card-eyebrow {{
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        color: var(--vw-blue);
-        font-weight: 700;
-        margin-bottom: 6px;
-    }}
-
-    .vw-card-title {{
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1.3;
-    }}
-
-    .vw-card-glyph {{
-        position: absolute;
-        right: 12px;
-        bottom: -6px;
-        font-size: 90px;
-        font-weight: 800;
-        color: rgba(255,255,255,0.07);
-        line-height: 1;
-    }}
-
-    .vw-card-locked {{
-        height: 138px;
-        border-radius: var(--vw-radius);
-        padding: 18px 20px;
-        background: #E9ECF1;
-        color: var(--vw-text-muted);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        border: 1px dashed var(--vw-border);
-    }}
-
-    /* Cards de links/ferramentas */
-    .vw-link-card {{
-        border-radius: var(--vw-radius);
-        padding: 16px;
-        background: var(--vw-white);
-        border: 1px solid var(--vw-border);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }}
-
-    .vw-link-card-title {{
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--vw-navy);
-        margin-bottom: 4px;
-    }}
-
-    .vw-link-card-desc {{
-        font-size: 12px;
-        color: var(--vw-text-muted);
-        margin-bottom: 12px;
-    }}
-
-    .vw-tag {{
-        font-size: 11px;
-        font-weight: 600;
-        background: var(--vw-navy);
-        color: var(--vw-white);
-        padding: 3px 10px;
-        border-radius: 999px;
-        white-space: nowrap;
-    }}
-
-    .vw-link-anchor {{
-        color: var(--vw-blue) !important;
-        font-weight: 600;
-        font-size: 12px;
-        text-decoration: none;
-    }}
-
-    /* Login */
-    .vw-login-box {{
-        width: 360px;
-        margin: 64px auto 0 auto;
-        padding: 32px 28px;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.92);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.4);
-    }}
-
-    .vw-login-box img {{
-        height: 42px;
-        margin-bottom: 14px;
-    }}
-
-    .vw-login-title {{
-        font-size: 21px;
-        font-weight: 800;
-        color: var(--vw-navy);
-        margin-top: 2px;
-    }}
-
-    .vw-login-sub {{
-        font-size: 12.5px;
-        color: var(--vw-text-muted);
-        margin-bottom: 18px;
-        letter-spacing: 0.2px;
-    }}
-
-    hr {{
-        border-color: var(--vw-border) !important;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
-
+<div class="contato-suporte">
+📩 <strong>Dúvidas:</strong> Lucas.silva9@volkswagen.com.br
+</div>
+""", unsafe_allow_html=True)
 
 # ======================================================
-# USUÁRIOS
+# USUÁRIOS (exemplo simples - ideal depois migrar p/ SSO)
 # ======================================================
 USUARIOS = {
     "aannutb": "12345",
@@ -339,44 +134,37 @@ USUARIOS = {
     "admin": "admin"
 }
 
-
-# ======================================================
+# =========================================
 # PERMISSÕES DE ACESSO
-# ======================================================
+# =========================================
 PERMISSOES = {
-    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
-    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
+    "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],  # acesso total
+    "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],    # acesso total
 
     "ufcmart": ["ENTREGA VEICULOS QA"],
     "vyplfbt": ["ENTREGA VEICULOS QA"],
     "gibvvr7": ["ENTREGA VEICULOS QA"]
 }
 
-
 # ======================================================
 # SESSÃO
 # ======================================================
 if "logado" not in st.session_state:
     st.session_state.logado = False
-
 if "usuario" not in st.session_state:
     st.session_state.usuario = ""
-
 
 # ======================================================
 # DATA + KW
 # ======================================================
 def aplicar_background_login():
     img = Path("login_bg.png")
-
     if img.exists():
         st.markdown(
             f"""
             <style>
             .stApp {{
-                background-image:
-                    linear-gradient(rgba(0,19,51,0.55), rgba(0,19,51,0.55)),
-                    url("data:image/png;base64,{base64.b64encode(img.read_bytes()).decode()}");
+                background-image: url("data:image/png;base64,{base64.b64encode(img.read_bytes()).decode()}");
                 background-size: cover;
                 background-position: center;
             }}
@@ -387,159 +175,152 @@ def aplicar_background_login():
             """,
             unsafe_allow_html=True
         )
-    else:
-        st.markdown(
-            """
-            <style>
-            .stApp {
-                background: linear-gradient(135deg, #001E50 0%, #0D4671 60%, #00B0F0 130%);
-            }
-            section[data-testid="stSidebar"] {
-                display: none;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
 
 def data_kw_atual():
     hoje = datetime.now()
-    return f"{hoje.strftime('%d/%m/%Y')} · KW {hoje.isocalendar().week}"
+    return f"{hoje.strftime('%d/%m/%Y')} | KW {hoje.isocalendar().week}"
 
-
-def topbar(usuario=""):
+def mostrar_data_kw():
     st.markdown(f"""
-    <div class="vw-topbar">
-        <div class="vw-topbar-left">
-            <img src="{VW_LOGO_URL}" />
-            <div>
-                <div class="vw-topbar-title">Design for Quality</div>
-                <div class="vw-topbar-sub">Engenharia de Protótipo · Qualidade VW do Brasil</div>
-            </div>
-        </div>
-        <div class="vw-topbar-right">
-            <span class="vw-chip">📅 {data_kw_atual()}</span>
-            {f'<span class="vw-chip">👤 {usuario}</span>' if usuario else ''}
-        </div>
+    <div style="
+        position: fixed;
+        top: 70px;
+        right: 15px;
+        z-index: 9999;
+        font-size: 13px;
+        color: white;
+        background: rgba(0,0,0,0.45);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: Arial;">
+        📅 <strong>{data_kw_atual()}</strong>
     </div>
     """, unsafe_allow_html=True)
 
+# ======================================================
+# CARRINHO
+# ======================================================
+def mostrar_carrinho_animado_painel():
+    st.markdown("""
+    <style>
+    .faixa-painel { height: 40px; overflow: hidden; }
+    .carro {
+        position: relative;
+        font-size: 24px;
+        animation: mover 12s linear infinite alternate;
+    }
+    @keyframes mover {
+        from { left: 0; }
+        to { left: calc(100% - 40px); }
+    }
+    </style>
+    <div class="faixa-painel">
+        <div class="carro">🚗</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ======================================================
 # HELPERS EXCEL
 # ======================================================
 def _to_float_ptbr(value):
+    """Converte valores numéricos pt-BR e ignora textos."""
     if value is None:
         return None
-
     if isinstance(value, (int, float)):
         return float(value)
 
     s = str(value).strip()
-
     if not s:
         return None
 
     s = s.replace(".", "").replace(",", ".")
-
     try:
         return float(s)
-    except Exception:
+    except:
         return None
 
-
 def extrair_total_coluna_j_openpyxl(uploaded_file, sheet_name):
+    """
+    Extrai o TOTAL da Coluna J (coluna 10 no Excel) varrendo de baixo pra cima
+    e pegando o primeiro valor numérico encontrado.
+    """
     wb = load_workbook(io.BytesIO(uploaded_file.getvalue()), data_only=True)
     ws = wb[sheet_name]
 
-    col_j = 10
-
+    col_j = 10  # J = 10
     for r in range(ws.max_row, 0, -1):
         v = ws.cell(row=r, column=col_j).value
         num = _to_float_ptbr(v)
-
         if num is not None:
             return num
-
     return None
-
 
 def formatar_moeda_br(x):
     if x is None or (isinstance(x, float) and pd.isna(x)):
         return ""
-
     return f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-
 # ======================================================
-# HELPERS PDF
+# HELPERS PDF (MIS12 / MIS36)
 # ======================================================
 def _to_float_ptbr_num(s):
+    """Converte número pt-BR do PDF (ex.: '108,4' -> 108.4)."""
     if s is None:
         return None
-
     if isinstance(s, (int, float)):
         return float(s)
 
     txt = str(s).strip()
-
     if not txt:
         return None
 
     txt = txt.replace(" ", "")
     txt = re.sub(r"[^0-9,\.\-]", "", txt)
-
     if not txt:
         return None
 
     txt = txt.replace(".", "").replace(",", ".")
-
     try:
         return float(txt)
-    except Exception:
+    except:
         return None
 
-
 def extrair_anos_pdf(file_bytes):
+    """Retorna anos HJ encontrados no PDF (1ª página)."""
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
                 return []
-
             text = pdf.pages[0].extract_text() or ""
-
     except Exception:
         return []
 
     t = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
     years = sorted({int(y) for y in re.findall(r"\b20\d{2}\b", t)})
-
     return years
 
-
 def extrair_titulo_pdf(file_bytes):
+    """
+    Extrai o título/código do relatório (ex.: 604-VW216-IND-CY21-24).
+    Funciona para os relatórios 604 (como os PDFs enviados).
+    """
+    # Ex.: 604-VW216-IND-CY21-24 ou 604-VW216-EUR-CY21-24
     pattern = re.compile(r"\b\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2}\b")
 
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
                 return None
-
             page = pdf.pages[0]
             text = page.extract_text() or ""
             text = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
 
             m = pattern.search(text)
-
             if m:
                 return m.group(0)
 
-            m2 = re.search(
-                r"\bNome do ficheiro\b\s+(\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2})\b",
-                text
-            )
-
+            # fallback: procura "Nome do ficheiro 604-VW216-..."
+            m2 = re.search(r"\bNome do ficheiro\b\s+(\d{3}-VW\d{3}-[A-Z]{3}-CY\d{2}-\d{2})\b", text)
             if m2:
                 return m2.group(1)
 
@@ -548,79 +329,53 @@ def extrair_titulo_pdf(file_bytes):
 
     return None
 
-
 def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
     """
-    Extrai os valores MIS12 e MIS36 do PDF para o ano informado.
+    Extrai MIS12 e MIS36 por ANO usando o TEXTO da 1ª página do PDF (estável p/ relatórios 604).
+    Retorna: {"ano": int, "MIS12": float|None, "MIS36": float|None, "anos_disponiveis": [..]}
     """
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
-                return {
-                    "ano": int(ano_alvo),
-                    "MIS12": None,
-                    "MIS36": None,
-                    "anos_disponiveis": []
-                }
-
+                return {"ano": int(ano_alvo), "MIS12": None, "MIS36": None, "anos_disponiveis": []}
             text = pdf.pages[0].extract_text() or ""
-
     except Exception:
-        return {
-            "ano": int(ano_alvo),
-            "MIS12": None,
-            "MIS36": None,
-            "anos_disponiveis": []
-        }
+        return {"ano": int(ano_alvo), "MIS12": None, "MIS36": None, "anos_disponiveis": []}
 
     t = re.sub(r"\s+", " ", text.replace("\n", " ")).strip()
 
+    # pega colunas MIS (ordem do cabeçalho)
     header_match = re.search(r"\bHJ\b(.*?\bMIS36\b)", t)
-
     if header_match:
         header_part = header_match.group(1)
         mis_cols = re.findall(r"\bMIS\d+\b", header_part)
     else:
         mis_cols = re.findall(r"\bMIS\d+\b", t)
 
+    # remove duplicados preservando ordem
     seen = set()
     mis_cols = [m for m in mis_cols if not (m in seen or seen.add(m))]
 
+    # anos disponíveis
     years = sorted({int(y) for y in re.findall(r"\b20\d{2}\b", t)})
 
     ano = int(ano_alvo)
-
     if ano not in years:
-        return {
-            "ano": ano,
-            "MIS12": None,
-            "MIS36": None,
-            "anos_disponiveis": years
-        }
+        return {"ano": ano, "MIS12": None, "MIS36": None, "anos_disponiveis": years}
 
+    # bloco do ano até próximo ano ou "Difere" ou "HJ Troca"
     pattern = rf"\b{ano}\b(.*?)(?=\b20\d{{2}}\b|\bDifere\b|\bHJ\b\s*Troca\b)"
     m = re.search(pattern, t)
-
     if not m:
-        return {
-            "ano": ano,
-            "MIS12": None,
-            "MIS36": None,
-            "anos_disponiveis": years
-        }
+        return {"ano": ano, "MIS12": None, "MIS36": None, "anos_disponiveis": years}
 
     block = m.group(1)
 
     nums = re.findall(r"-?\d+(?:\.\d{3})*,\d+|-?\d+,\d+", block)
     vals = [_to_float_ptbr_num(n) for n in nums]
 
-    # FIX: a versão anterior tentava usar a lista `mis_cols` como se fosse uma função
-    # (`mis_cols(vals[i]...)`), o que gerava um TypeError em tempo de execução.
-    # O correto é montar o dicionário {nome_da_coluna: valor}.
-    mapping = {
-        mis_cols[i]: (vals[i] if i < len(vals) else None)
-        for i in range(len(mis_cols))
-    }
+    # mapeia por posição: MIS0->vals[0], MIS1->vals[1], ...
+    mapping = {mis_cols[i]: (vals[i] if i < len(vals) else None) for i in range(len(mis_cols))}
 
     return {
         "ano": ano,
@@ -637,7 +392,7 @@ def aba_agendamento_veiculos():
     st.subheader("🚗 Agendamento de Veículos")
 
     dia_selecionado = st.date_input(
-        "Selecione o dia do agendamento",
+        "📅 Selecione o dia do agendamento",
         value=date.today(),
         format="DD/MM/YYYY"
     )
@@ -666,7 +421,6 @@ def aba_agendamento_veiculos():
         }
 
     c_h, c_u, c_d, c_s = st.columns([2, 3, 5, 2])
-
     c_h.markdown("**Horário**")
     c_u.markdown("**Usuário**")
     c_d.markdown("**Descrição**")
@@ -678,8 +432,8 @@ def aba_agendamento_veiculos():
         dados = st.session_state.agenda_veiculos[chave_dia][h]
 
         col1, col2, col3, col4 = st.columns([2, 3, 5, 2])
-
         col1.write(h)
+
         col2.write(dados["usuario"] if dados["salvo"] else "")
 
         dados["descricao"] = col3.text_input(
@@ -687,8 +441,7 @@ def aba_agendamento_veiculos():
             placeholder="Descreva o motivo da utilização do veículo",
             value=dados["descricao"],
             disabled=dados["salvo"],
-            key=f"desc_{chave_dia}_{h}",
-            label_visibility="collapsed"
+            key=f"desc_{chave_dia}_{h}"
         )
 
         if dados["salvo"]:
@@ -709,19 +462,10 @@ def aba_agendamento_veiculos():
 # COPILOTO IA
 # ======================================================
 def responder_dashboard(pergunta, historico=None):
-    if client is None:
-        return "⚠️ Azure OpenAI não configurado. Verifique AZURE_OPENAI_API_KEY e AZURE_OPENAI_ENDPOINT."
-
     if not DEPLOYMENT:
         return "⚠️ DEPLOYMENT não configurado. Defina AZURE_OPENAI_DEPLOYMENT."
 
-    mensagens = [
-        {
-            "role": "system",
-            "content": "Especialista em Qualidade Automotiva VW. Seja objetivo e claro."
-        }
-    ]
-
+    mensagens = [{"role": "system", "content": "Especialista em Qualidade Automotiva VW. Seja objetivo e claro."}]
     if historico:
         mensagens.extend(historico)
 
@@ -733,18 +477,25 @@ def responder_dashboard(pergunta, historico=None):
         temperature=0.3,
         max_tokens=300
     )
-
     return resp.choices[0].message.content
 
-
 def pagina_input_budget_gmp21():
+
     st.subheader("🔎 Consulta de Milestone (GMP21)")
 
+    # ==================================
+    # PROJETO
+    # ==================================
     modelo = st.selectbox(
         "Projeto / Plataforma",
-        ["Plataformas - Milestone"]
+        [
+            "Plataformas - Milestone"
+        ]
     )
 
+    # ==================================
+    # ANO E MÊS
+    # ==================================
     col1, col2 = st.columns(2)
 
     with col1:
@@ -753,6 +504,9 @@ def pagina_input_budget_gmp21():
     with col2:
         mes = st.selectbox("Mês", list(range(1, 13)))
 
+    # ==================================
+    # TIPO MILESTONE
+    # ==================================
     tipo_milestone = st.selectbox(
         "Tipo de Milestone",
         ["PLATAFORMA", "HUT", "MOTOR"]
@@ -766,7 +520,11 @@ def pagina_input_budget_gmp21():
 
     milestone = st.selectbox("Milestone", mapa_milestones[tipo_milestone])
 
+    # ==================================
+    # 🔥 MAPA TEMPO
+    # ==================================
     mapa_tempo = {
+
         "PLATAFORMA": {
             (2027, 3): "PM/PP",
             (2027, 6): "PD/ZV",
@@ -779,7 +537,7 @@ def pagina_input_budget_gmp21():
             (2030, 3): "PVS",
             (2030, 8): "O-S",
             (2031, 1): "SOP",
-            (2031, 4): "ME"
+            (2031, 4): "ME",
         },
 
         "HUT": {
@@ -795,7 +553,7 @@ def pagina_input_budget_gmp21():
             (2030, 3): "PVS",
             (2030, 8): "O-S",
             (2031, 1): "SOP",
-            (2031, 4): "ME"
+            (2031, 4): "ME",
         },
 
         "MOTOR": {
@@ -808,84 +566,76 @@ def pagina_input_budget_gmp21():
             (2029, 12): "VFF-A",
             (2030, 2): "PVS-A",
             (2030, 7): "O-S A",
-            (2030, 12): "SOP-A"
+            (2030, 12): "SOP-A",
         }
     }
 
+    # ==================================
+    # ✅ VALIDAÇÃO
+    # ==================================
     milestone_esperado = mapa_tempo.get(tipo_milestone, {}).get((ano, mes))
 
     if milestone_esperado:
+
         if milestone_esperado != milestone:
             st.warning(
                 f"⚠️ Para {mes}/{ano} o correto é {milestone_esperado} ({tipo_milestone})"
             )
         else:
             st.success("✅ Milestone correto")
+
     else:
         st.info("ℹ️ Esse mês não possui milestone definido")
+
 
 
 def pagina_copiloto_ia():
     st.subheader("🤖 Copiloto IA")
 
-    with st.expander("🔎 Diagnóstico Azure OpenAI", expanded=False):
-        st.write("AZURE_OPENAI_ENDPOINT:", "✅ OK" if AZURE_OPENAI_ENDPOINT else "❌ VAZIO")
-        st.write("AZURE_OPENAI_API_KEY:", "✅ OK" if AZURE_OPENAI_API_KEY else "❌ VAZIO")
-        st.write("AZURE_OPENAI_DEPLOYMENT:", DEPLOYMENT or "❌ VAZIO")
+    with st.expander("🔎 Diagnóstico Azure OpenAI (clique para abrir)", expanded=False):
+        st.write("AZURE_OPENAI_ENDPOINT:", "✅ OK" if os.getenv("AZURE_OPENAI_ENDPOINT") else "❌ VAZIO")
+        st.write("AZURE_OPENAI_API_KEY:", "✅ OK" if os.getenv("AZURE_OPENAI_API_KEY") else "❌ VAZIO")
+        st.write("AZURE_OPENAI_DEPLOYMENT:", os.getenv("AZURE_OPENAI_DEPLOYMENT") or "❌ VAZIO")
 
         if st.button("🧪 Testar conexão com Azure OpenAI"):
             try:
-                if client is None:
-                    st.error("❌ Azure OpenAI não configurado.")
-                else:
-                    test = client.chat.completions.create(
-                        model=DEPLOYMENT,
-                        messages=[{"role": "user", "content": "Responda apenas: OK"}],
-                        max_tokens=10,
-                        temperature=0
-                    )
-
-                    st.success("✅ Conectou! Resposta: " + test.choices[0].message.content)
-
+                test = client.chat.completions.create(
+                    model=DEPLOYMENT,
+                    messages=[{"role": "user", "content": "Responda apenas: OK"}],
+                    max_tokens=10,
+                    temperature=0
+                )
+                st.success("✅ Conectou! Resposta: " + test.choices[0].message.content)
             except Exception as e:
                 st.error("❌ Falhou ao chamar Azure OpenAI.")
                 st.exception(e)
 
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = [
-            {
-                "role": "assistant",
-                "content": "Olá! Posso ajudar com KPIs, processos e dúvidas do time de Qualidade."
-            }
+            {"role": "assistant", "content": "Olá! Posso ajudar com KPIs, processos e dúvidas do time de Qualidade."}
         ]
 
     for m in st.session_state.chat_messages:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
-    prompt = st.chat_input("Digite sua pergunta...")
-
+    prompt = st.chat_input("Digite sua pergunta…")
     if prompt:
         st.session_state.chat_messages.append({"role": "user", "content": prompt})
-
         with st.chat_message("user"):
             st.markdown(prompt)
 
         try:
             with st.chat_message("assistant"):
                 with st.spinner("Pensando..."):
-                    historico = [
-                        x for x in st.session_state.chat_messages
-                        if x["role"] in ("user", "assistant")
-                    ]
-
+                    historico = [x for x in st.session_state.chat_messages if x["role"] in ("user", "assistant")]
                     answer = responder_dashboard(prompt, historico=historico)
                     st.markdown(answer)
 
             st.session_state.chat_messages.append({"role": "assistant", "content": answer})
 
         except Exception as e:
-            st.error("❌ Erro ao chamar o Azure OpenAI.")
+            st.error("❌ Erro ao chamar o Azure OpenAI (veja detalhes abaixo).")
             st.exception(e)
 
 
@@ -895,12 +645,14 @@ def pagina_copiloto_ia():
 def Comparativo_Custo_Reparo_Prognose():
     st.subheader("🧮 Custo Médio de Reparo")
 
-    st.markdown("""
-    **Como funciona:** envie o Excel com as abas dos projetos e o sistema irá capturar
-    o **último valor numérico** encontrado na **Coluna J** de cada aba e comparar.
-
-    ⚠️ Se o total em J for fórmula, salve a planilha antes de enviar.
-    """)
+    st.markdown(
+        """
+        **Como funciona:** envie o Excel (com as abas dos projetos) e o sistema irá capturar
+        o **último valor numérico** encontrado na **Coluna J** de cada aba (TOTAL) e comparar.
+        
+        ⚠️ Se o total em J for fórmula, **salve a planilha** antes de enviar.
+        """
+    )
 
     arquivo = st.file_uploader("📄 Upload da planilha Excel", type=["xlsx", "xls"])
 
@@ -911,7 +663,6 @@ def Comparativo_Custo_Reparo_Prognose():
     try:
         wb = load_workbook(io.BytesIO(arquivo.getvalue()), data_only=True)
         abas = wb.sheetnames
-
     except Exception as e:
         st.error("Não foi possível abrir a planilha. Verifique se o arquivo não está corrompido.")
         st.exception(e)
@@ -921,7 +672,7 @@ def Comparativo_Custo_Reparo_Prognose():
     default_sel = sugestao[:3] if len(sugestao) >= 3 else abas[:3]
 
     abas_sel = st.multiselect(
-        "Selecione as abas para comparar",
+        "Selecione as abas (projetos) para comparar",
         options=abas,
         default=default_sel
     )
@@ -933,10 +684,8 @@ def Comparativo_Custo_Reparo_Prognose():
     st.divider()
 
     resultados = []
-
     for aba in abas_sel:
         total_j = extrair_total_coluna_j_openpyxl(arquivo, aba)
-
         resultados.append({
             "Projeto/Aba": aba,
             "Total Coluna J": total_j
@@ -947,36 +696,20 @@ def Comparativo_Custo_Reparo_Prognose():
     if df["Total Coluna J"].notna().any():
         maxv = df["Total Coluna J"].max()
         minv = df["Total Coluna J"].min()
-
         df["Diferença p/ Máx"] = maxv - df["Total Coluna J"]
         df["Diferença p/ Mín"] = df["Total Coluna J"] - minv
 
     col1, col2, col3 = st.columns(3)
-
-    col1.metric(
-        "Maior Total (J)",
-        formatar_moeda_br(df["Total Coluna J"].max() if df["Total Coluna J"].notna().any() else None)
-    )
-
-    col2.metric(
-        "Menor Total (J)",
-        formatar_moeda_br(df["Total Coluna J"].min() if df["Total Coluna J"].notna().any() else None)
-    )
-
-    col3.metric(
-        "Delta (Máx - Mín)",
-        formatar_moeda_br(
-            (df["Total Coluna J"].max() - df["Total Coluna J"].min())
-            if df["Total Coluna J"].notna().any()
-            else None
-        )
-    )
+    col1.metric("Maior Total (J)", formatar_moeda_br(df["Total Coluna J"].max() if df["Total Coluna J"].notna().any() else None))
+    col2.metric("Menor Total (J)", formatar_moeda_br(df["Total Coluna J"].min() if df["Total Coluna J"].notna().any() else None))
+    col3.metric("Delta (Máx - Mín)", formatar_moeda_br(
+        (df["Total Coluna J"].max() - df["Total Coluna J"].min())
+        if df["Total Coluna J"].notna().any() else None
+    ))
 
     st.markdown("### ✅ Comparativo Custo de Reparo")
-
     df_view = df.copy()
     df_view["Total Coluna J"] = df_view["Total Coluna J"].apply(formatar_moeda_br)
-
     if "Diferença p/ Máx" in df_view.columns:
         df_view["Diferença p/ Máx"] = df["Diferença p/ Máx"].apply(formatar_moeda_br)
         df_view["Diferença p/ Mín"] = df["Diferença p/ Mín"].apply(formatar_moeda_br)
@@ -984,42 +717,29 @@ def Comparativo_Custo_Reparo_Prognose():
     st.dataframe(df_view, use_container_width=True)
 
     st.divider()
-    st.markdown("### 📊 Visual")
-
+    st.markdown("### 📊 Visual (Totais da Coluna J)")
     df_plot = df.dropna(subset=["Total Coluna J"]).copy()
-
     if len(df_plot):
-        fig = px.bar(
-            df_plot,
-            x="Projeto/Aba",
-            y="Total Coluna J",
-            text="Total Coluna J",
-            color_discrete_sequence=["#001E50"]
-        )
-
-        fig.update_traces(
-            texttemplate="%{text:.2f}",
-            textposition="outside"
-        )
-
+        fig = px.bar(df_plot, x="Projeto/Aba", y="Total Coluna J", text="Total Coluna J")
+        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+        
         fig.update_layout(
-            barmode="group",
-            title="Comparativo Custo Médio de Reparo",
-            uniformtext_minsize=8,
-            uniformtext_mode="hide",
-            plot_bgcolor="#FFFFFF",
-            paper_bgcolor="#FFFFFF",
-            font=dict(color="#1A1D22", family="Inter, sans-serif"),
-            hovermode="x unified"
-        )
+        barmode='group',
+        title="Performance 2026 | Total de veículos liberados",
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
+        plot_bgcolor="#030712",
+        paper_bgcolor="#030712",
+        font=dict(color="white"),
+        hovermode="x unified"
+
+)
 
         st.plotly_chart(fig, use_container_width=True)
-
     else:
         st.warning("Não foi possível localizar valores numéricos na Coluna J das abas selecionadas.")
 
     st.divider()
-
     st.download_button(
         "Baixar comparativo (CSV)",
         data=df.to_csv(index=False).encode("utf-8"),
@@ -1029,21 +749,21 @@ def Comparativo_Custo_Reparo_Prognose():
 
 
 # ======================================================
-# COMPARATIVO PDF
+# COMPARATIVO PDF (MIS12 / MIS36)
 # ======================================================
 def Comparativo_MIS_PDF():
     st.subheader("📄 Comparativo MIS12 e MIS36 (PDF)")
 
     st.markdown("""
-    **Como funciona:** envie **2 PDFs**. O sistema identifica o título/código do relatório
-    e extrai os valores **MIS12** e **MIS36** do ano selecionado.
-    """)
+**Como funciona:** envie **2 PDFs** (A e B). O sistema identifica o **título/código** do relatório
+e extrai os valores **MIS12** e **MIS36** do **ano selecionado (HJ)**.
+
+✅ Este modo funciona muito bem para os relatórios 604 (texto selecionável).  
+""")
 
     colA, colB = st.columns(2)
-
     with colA:
         pdf_a = st.file_uploader("Upload PDF A", type=["pdf"], key="pdf_a")
-
     with colB:
         pdf_b = st.file_uploader("Upload PDF B", type=["pdf"], key="pdf_b")
 
@@ -1054,83 +774,65 @@ def Comparativo_MIS_PDF():
     bytes_a = pdf_a.getvalue()
     bytes_b = pdf_b.getvalue()
 
+    # Identificação
     with st.spinner("Lendo títulos/códigos dos PDFs..."):
         titulo_a = extrair_titulo_pdf(bytes_a) or "Não identificado"
         titulo_b = extrair_titulo_pdf(bytes_b) or "Não identificado"
 
-    st.markdown("### 🏷️ Identificação dos PDFs")
-
+    st.markdown("### 🏷️ Identificação dos PDFs (para diferenciar)")
     c1, c2 = st.columns(2)
-
     c1.info(f"**PDF A:** {titulo_a}")
     c2.info(f"**PDF B:** {titulo_b}")
 
+    # anos disponíveis (união dos 2 PDFs)
     anos_disp = sorted(set(extrair_anos_pdf(bytes_a)) | set(extrair_anos_pdf(bytes_b)))
-
     if not anos_disp:
-        st.error("Não foi possível identificar anos no PDF.")
+        st.error("Não foi possível identificar anos no PDF. Verifique se o PDF tem texto extraível.")
         return
 
     default_ano = max(anos_disp)
-
-    ano_sel = st.selectbox(
-        "Ano para comparação",
-        options=anos_disp,
-        index=anos_disp.index(default_ano)
-    )
+    ano_sel = st.selectbox("Ano para comparação (HJ)", options=anos_disp, index=anos_disp.index(default_ano))
 
     with st.spinner("Extraindo MIS12/MIS36 do PDF A..."):
         res_a = extrair_mis12_mis36_por_ano_pdf(bytes_a, int(ano_sel))
-
     with st.spinner("Extraindo MIS12/MIS36 do PDF B..."):
         res_b = extrair_mis12_mis36_por_ano_pdf(bytes_b, int(ano_sel))
 
     def fmt_num(x):
         if x is None:
             return "—"
-
         return f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
     def delta(a, b):
         if a is None or b is None:
             return None
-
         return b - a
 
     def delta_pct(a, b):
         if a is None or b is None or a == 0:
             return None
-
         return (b - a) / a * 100.0
 
     d_mis12 = delta(res_a["MIS12"], res_b["MIS12"])
     p_mis12 = delta_pct(res_a["MIS12"], res_b["MIS12"])
-
     d_mis36 = delta(res_a["MIS36"], res_b["MIS36"])
     p_mis36 = delta_pct(res_a["MIS36"], res_b["MIS36"])
 
-    if (
-        res_a["MIS12"] is None
-        or res_a["MIS36"] is None
-        or res_b["MIS12"] is None
-        or res_b["MIS36"] is None
-    ):
-        st.warning("Algum valor não foi encontrado para este ano em um dos PDFs.")
+    if res_a["MIS12"] is None or res_a["MIS36"] is None or res_b["MIS12"] is None or res_b["MIS36"] is None:
+        st.warning("Algum valor não foi encontrado para este ano em um dos PDFs (pode estar ausente no relatório).")
         st.write("Anos disponíveis PDF A:", res_a.get("anos_disponiveis", []))
         st.write("Anos disponíveis PDF B:", res_b.get("anos_disponiveis", []))
 
     st.divider()
-    st.markdown("### ✅ Métricas")
+    st.markdown("### ✅ Métricas (Ano selecionado)")
 
     c1, c2, c3, c4 = st.columns(4)
-
     c1.metric("MIS12 - PDF A", fmt_num(res_a["MIS12"]))
     c2.metric("MIS12 - PDF B", fmt_num(res_b["MIS12"]))
     c3.metric("Δ MIS12 (B - A)", fmt_num(d_mis12))
     c4.metric("Δ% MIS12", "—" if p_mis12 is None else f"{p_mis12:.1f}%")
 
     c1, c2, c3, c4 = st.columns(4)
-
     c1.metric("MIS36 - PDF A", fmt_num(res_a["MIS36"]))
     c2.metric("MIS36 - PDF B", fmt_num(res_b["MIS36"]))
     c3.metric("Δ MIS36 (B - A)", fmt_num(d_mis36))
@@ -1140,69 +842,27 @@ def Comparativo_MIS_PDF():
     st.markdown("### 📋 Tabela")
 
     df = pd.DataFrame([
-        {
-            "PDF": "A",
-            "Título": titulo_a,
-            "Ano": int(ano_sel),
-            "MIS12": res_a["MIS12"],
-            "MIS36": res_a["MIS36"]
-        },
-        {
-            "PDF": "B",
-            "Título": titulo_b,
-            "Ano": int(ano_sel),
-            "MIS12": res_b["MIS12"],
-            "MIS36": res_b["MIS36"]
-        }
+        {"PDF": "A", "Título": titulo_a, "Ano": int(ano_sel), "MIS12": res_a["MIS12"], "MIS36": res_a["MIS36"]},
+        {"PDF": "B", "Título": titulo_b, "Ano": int(ano_sel), "MIS12": res_b["MIS12"], "MIS36": res_b["MIS36"]},
     ])
 
     df_view = df.copy()
     df_view["MIS12"] = df_view["MIS12"].apply(fmt_num)
     df_view["MIS36"] = df_view["MIS36"].apply(fmt_num)
-
     st.dataframe(df_view, use_container_width=True)
 
     st.markdown("### 📊 Visual")
-
     df_plot = df.dropna(subset=["MIS12", "MIS36"], how="all").copy()
-
     if len(df_plot):
-        df_melt = df_plot.melt(
-            id_vars=["PDF", "Título", "Ano"],
-            value_vars=["MIS12", "MIS36"],
-            var_name="MIS",
-            value_name="Valor"
-        )
-
-        fig = px.bar(
-            df_melt,
-            x="MIS",
-            y="Valor",
-            color="PDF",
-            barmode="group",
-            text="Valor",
-            hover_data=["Título"],
-            color_discrete_sequence=["#001E50", "#00B0F0"]
-        )
-
-        fig.update_traces(
-            texttemplate="%{text:.2f}",
-            textposition="outside"
-        )
-
-        fig.update_layout(
-            plot_bgcolor="#FFFFFF",
-            paper_bgcolor="#FFFFFF",
-            font=dict(color="#1A1D22", family="Inter, sans-serif")
-        )
-
+        df_melt = df_plot.melt(id_vars=["PDF", "Título", "Ano"], value_vars=["MIS12", "MIS36"],
+                               var_name="MIS", value_name="Valor")
+        fig = px.bar(df_melt, x="MIS", y="Valor", color="PDF", barmode="group", text="Valor", hover_data=["Título"])
+        fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
         st.plotly_chart(fig, use_container_width=True)
-
     else:
         st.info("Sem valores suficientes para plotar.")
 
     st.divider()
-
     st.download_button(
         "Baixar comparativo (CSV)",
         data=df.to_csv(index=False).encode("utf-8"),
@@ -1215,37 +875,75 @@ def Comparativo_MIS_PDF():
 # LOGIN
 # ======================================================
 def tela_login():
-    st.markdown(f"""
-    <div class="vw-login-box">
-        <img src="{VW_LOGO_URL}" />
-        <div class="vw-login-title">Design for Quality</div>
-        <div class="vw-login-sub">Sistema de Qualidade · Volkswagen do Brasil</div>
+
+    # CSS
+    st.markdown("""
+    <style>
+    .login-box {
+        width: 320px;
+        margin: auto;
+        margin-top: 60px;
+        padding: 20px;
+        border-radius: 12px;
+
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.25);
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .titulo {
+        font-size: 22px;
+        font-weight: bold;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 15px;
+    }
+
+    .logo img {
+        width: 45px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ✅ CAIXA VISUAL (faltava isso)
+    
+    st.markdown("""
+    <div class="login-box">
+    <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg">
+    </div>
+    <div class="titulo">Design for Quality</div>
+    <div class="subtitulo">Sistema de Qualidade</div>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([3, 4, 3])
+
+    # ✅ FORM LOGIN (mantém funcional)
+    col1, col2, col3 = st.columns([3,4,3])
 
     with col2:
         with st.form("login"):
             user = st.text_input("Usuário REDE VW")
             pwd = st.text_input("Senha", type="password")
 
-            entrar = st.form_submit_button("Entrar", use_container_width=True)
-
-            if entrar:
-                user = user.lower().strip()
-
-                if user in USUARIOS and USUARIOS[user] == pwd:
+            if st.form_submit_button("Entrar"):
+                if user.lower() in USUARIOS and USUARIOS[user.lower()] == pwd:
                     st.session_state.logado = True
-                    st.session_state.usuario = user
+                    st.session_state.usuario = user.lower()
                     st.rerun()
                 else:
                     st.error("Usuário ou senha inválidos")
 
 
-# ======================================================
-# LINKS E FERRAMENTAS
-# ======================================================
 def pagina_links_ferramentas():
     st.subheader("🔗 Links e Ferramentas do Dia a Dia")
 
@@ -1257,10 +955,12 @@ def pagina_links_ferramentas():
             "tag": "BI"
         },
         {
+
             "nome": "SharePoint - Qualidade",
-            "url": "General",
+            "url": "https://volkswagengroup.sharepoint.com/:f:/r/sites/QAProttipos/Shared%20Documents/General?csf=1&web=1&e=eNV37D",
             "desc": "Documentos e procedimentos do time",
             "tag": "Docs"
+
         },
         {
             "nome": "Teams - Squad QA",
@@ -1271,13 +971,12 @@ def pagina_links_ferramentas():
         {
             "nome": "Pasta de Trabalho - Rede",
             "url": r"G:\ANCBQD01\S1004_B-QP_ Plan_Central Novos_Projetos\S2043_B-QP_VSC_QA_&_Eng_Prototipo\DESIGN FOR QUALITY",
-            "desc": "Atalho para pasta da rede",
+            "desc": "Atalho para pasta da rede (copiar caminho)",
             "tag": "Files"
-        }
+        },
     ]
 
     colA, colB, colC = st.columns(3)
-
     cols = [colA, colB, colC]
 
     for i, r in enumerate(recursos):
@@ -1285,19 +984,20 @@ def pagina_links_ferramentas():
             url = r["url"]
             is_http = url.lower().startswith("http")
 
-            if is_http:
-                link_html = f'<a class="vw-link-anchor" href="{url}" target="_blank">Abrir ↗</a>'
-            else:
-                link_html = f'<span style="font-size:12px;opacity:.9;">{url}</span>'
+            link_html = (
+                f'<a href="{url}" target="_blank" style="text-decoration:none;font-weight:600;">Abrir ↗</a>'
+                if is_http else
+                f'<span style="font-size:12px;opacity:.9;">{url}</span>'
+            )
 
             st.markdown(
                 f"""
-                <div class="vw-link-card">
-                  <div class="vw-link-card-title">{r['nome']}</div>
-                  <div class="vw-link-card-desc">{r['desc']}</div>
+                <div style="border-radius:16px;padding:14px;background:#1118270f;border:1px solid #e5e7eb;">
+                  <div style="font-size:14px;font-weight:700;margin-bottom:6px;">{r['nome']}</div>
+                  <div style="font-size:12px;opacity:.85;margin-bottom:10px;">{r['desc']}</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                    <span class="vw-tag">{r['tag']}</span>
-                    <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">
+                    <span style="font-size:11px;background:#11182715;padding:3px 8px;border-radius:999px;white-space:nowrap;">{r['tag']}</span>
+                    <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;">
                       {link_html}
                     </div>
                   </div>
@@ -1307,16 +1007,10 @@ def pagina_links_ferramentas():
             )
 
             if not is_http:
-                st.text_input(
-                    "Copiar caminho:",
-                    value=url,
-                    label_visibility="collapsed",
-                    key=f"path_{i}"
-                )
-
+                st.text_input("Copiar caminho:", value=url, label_visibility="collapsed", key=f"path_{i}")
 
 # ======================================================
-# TEMPLATES
+# PÁGINA: TEMPLATES
 # ======================================================
 def pagina_templates():
     st.subheader("📄 Templates e Arquivos")
@@ -1325,16 +1019,13 @@ def pagina_templates():
     pasta.mkdir(exist_ok=True)
 
     arquivos = sorted(pasta.glob("*"))
-
     if not arquivos:
-        st.info("Nenhum arquivo em /templates ainda. Coloque aqui os modelos.")
+        st.info("Nenhum arquivo em /templates ainda. Coloque aqui os modelos (xlsx, pptx, pdf).")
         return
 
     for arq in arquivos:
         col1, col2 = st.columns([7, 2])
-
         col1.write(f"📌 {arq.name}")
-
         with col2:
             st.download_button(
                 "Baixar",
@@ -1344,150 +1035,226 @@ def pagina_templates():
                 key=f"dl_{arq.name}"
             )
 
-
 # ======================================================
+# PAINEL
+# ======================================================
+# =========================================
 # HELPERS DE NAVEGAÇÃO
-# ======================================================
+# =========================================
+
 def sync_pagina_com_url():
     if "pagina_atual" not in st.session_state:
         if "pagina" in st.query_params:
             pagina_url = st.query_params["pagina"]
-
             if isinstance(pagina_url, list):
                 pagina_url = pagina_url[0]
-
             st.session_state.pagina_atual = pagina_url
-
         else:
             st.session_state.pagina_atual = "HOME"
-
 
 def ir_para(pagina):
     st.session_state.pagina_atual = pagina
     st.query_params.update({"pagina": pagina})
     st.rerun()
 
-
 def botao_voltar():
     if st.button("⬅️ Voltar", key="btn_voltar"):
         ir_para("HOME")
 
 
-# ======================================================
-# CARD DE ACESSO RÁPIDO (componente reutilizável)
-# ======================================================
-def render_card(titulo, categoria, glifo, key, tem_acesso):
-    if tem_acesso:
-        st.markdown(f"""
-        <div class="vw-card">
-            <div class="vw-card-accent"></div>
-            <div class="vw-card-eyebrow">{categoria}</div>
-            <div class="vw-card-title">{titulo}</div>
-            <div class="vw-card-glyph">{glifo}</div>
-        </div>
-        """, unsafe_allow_html=True)
 
-        return st.button("Acessar →", key=key, use_container_width=True)
-    else:
-        st.markdown("""
-        <div class="vw-card-locked">🔒 Sem acesso</div>
-        """, unsafe_allow_html=True)
-
-        return False
-
-
-# ======================================================
+# =========================================
 # PAINEL PRINCIPAL
-# ======================================================
-def painel():
-    sync_pagina_com_url()
-    inject_css()
+# =========================================
 
+def painel():
+
+    sync_pagina_com_url()
+    mostrar_data_kw()
+    st.title("Design for Quality")
+    mostrar_carrinho_animado_painel()
+
+    if "subpagina" not in st.session_state:
+        st.session_state.subpagina = None
+
+    pagina = st.session_state.get("pagina_atual", "HOME")
     usuario = st.session_state.get("usuario", "")
     permissoes = PERMISSOES.get(usuario, [])
 
-    topbar(usuario)
+    # ======================
+    # CSS DOS CARDS
+    # ======================
+    st.markdown("""
+    <style>
+    .card-custom {
+        height: 150px;
+        border-radius: 12px;
+        padding: 15px;
+        position: relative;
+        color: black;
+        cursor: pointer;
+}
 
-    with st.sidebar:
-        st.markdown("### Navegação")
+    .card-orange {
+        background: linear-gradient(135deg, #ffb37a, #ff7a00);
+}
 
-        if st.button("🏠 Início", use_container_width=True):
-            ir_para("HOME")
+    .card-blue {
+        background: linear-gradient(135deg, #64b5f6, #1565c0);
+        color: white;
+}
 
-        st.markdown("---")
-        st.markdown(f"**Usuário:** {usuario}")
+    .card-red {
+        background: linear-gradient(135deg, #e53935, #8e0000);
+        color: white;
+}
 
-        if st.button("🚪 Sair", use_container_width=True):
-            logout()
+    .card-black {
+        background: linear-gradient(135deg, #444, #000);
+        color: white;
+}
 
-    pagina = st.session_state.get("pagina_atual", "HOME")
+    .card-title {
+        font-size: 14px;
+        font-weight: bold;
+}
+
+    .card-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 16px;
+}
+
+    .card-bg-letter {
+        position: absolute;
+        right: 10px;
+        bottom: 0px;
+        font-size: 110px;
+        color: rgba(255,255,255,0.2);
+        font-weight: bold;
+}
+    </style>
+    """, unsafe_allow_html=True)
 
     # ======================
     # HOME
     # ======================
     if pagina == "HOME":
-        st.markdown("""
-        <h2 style="text-align:center; color:#001E50; margin-bottom:2px;">Acesso Rápido</h2>
-        <p style="text-align:center; color:#5B6472; font-size:13px; margin-top:0;">
-            Selecione um módulo para continuar
-        </p>
-        """, unsafe_allow_html=True)
 
-        st.write("")
+        st.markdown("""
+        <h1 style="text-align: center;">Acesso Rápido</h1>
+        <hr style="width: 200px; margin: auto;">
+        """, unsafe_allow_html=True)
 
         col1, col2, col3, col4, col5 = st.columns(5)
 
+        
+       #    STREIFELIST
         with col1:
-            if render_card("Overdue Streifenlist", "Qualidade", "O", "overdue", "OVERDUE" in permissoes):
-                ir_para("OVERDUE")
 
+            if "OVERDUE" in permissoes:
+
+                st.markdown("""
+                <div class='card-custom card-orange'>
+                <div class='card-title'>Overdue Streifenlist</div>
+                <div class='card-bottom'>Acessar</div>
+                <div class='card-bg-letter'>O</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+                if st.button("Acessar", key="overdue"):   # 👈 botão logo abaixo
+                    st.session_state.pagina_atual = "OVERDUE"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+
+        # ✅ COLUNA 2 (KPM)
         with col2:
-            if render_card("KPI KPM", "Indicadores", "K", "kpm", "KPM" in permissoes):
-                ir_para("KPM")
+            if "KPM" in permissoes:
+                st.markdown("""
+                <div class='card-custom card-black'>
+                <div class='card-title'>KPI KPM</div>
+                <div class='card-center'>Acessar</div>
+                <div class='card-bg-letter'>K</div>
+            </div>
+            """, unsafe_allow_html=True)
+                if st.button("Acessar", key="kpm"):
+                    st.session_state.pagina_atual = "KPM"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
+        # ✅ COLUNA 3 (GMP21)
         with col3:
-            if render_card("Prognose GMP21", "Budget", "G", "gmp21", "GMP21" in permissoes):
-                ir_para("GMP21")
+            if "GMP21" in permissoes:
+                
+                st.markdown("""
+                <div class='card-custom card-red'>
+                    <div class='card-title'>Prognose GMP21</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>G</div>
+            </div>
+            """, unsafe_allow_html=True)
+                if st.button("Acessar", key="gmp21"):
+                    st.session_state.pagina_atual = "GMP21"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
+        # ✅ COLUNA 4 (STATUS)
         with col4:
-            if render_card("Análise Custo Reparo", "Financeiro", "S", "status", "STATUS" in permissoes):
-                ir_para("STATUS")
+            if "STATUS" in permissoes:
+                
+                st.markdown("""
+                <div class='card-custom card-blue'>
+                    <div class='card-title'>Análise Custo Reparo</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>S</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("Acessar", key="status"):
+                    st.session_state.pagina_atual = "STATUS"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
+        # ✅ COLUNA 5 (ENTREGA)
         with col5:
-            if render_card("Entrega Veículos", "Logística", "E", "entrega_veiculos_qa", "ENTREGA VEICULOS QA" in permissoes):
-                ir_para("ENTREGA VEICULOS QA")
+            if "ENTREGA VEICULOS QA" in permissoes:
+                st.markdown("""
+                <div class='card-custom card-orange'>
+                    <div class='card-title'>Entrega Veículos</div>
+                    <div class='card-center'>Acessar</div>
+                    <div class='card-bg-letter'>E</div>
+            </div>
+            """, unsafe_allow_html=True)
+                if st.button("Acessar", key="entrega_veiculos_qa"):
+                    st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
+                    st.rerun()
+            else:
+                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
 
-        st.write("")
-        st.divider()
-        pagina_links_ferramentas()
 
     # ======================
-    # ENTREGA VEICULOS QA
+    # ENTREGA
     # ======================
+    
     elif pagina == "ENTREGA VEICULOS QA":
-        if "ENTREGA VEICULOS QA" not in permissoes:
-            st.warning("🚫 Acesso negado")
-            return
 
         botao_voltar()
-
+        
         st.markdown("""
-                2<h2 style="color:#001E50;">
-                🚗 Status Liberações ZP8
-                </h2>
-                """, unsafe_allow_html=True)
-                
-        st.caption("Rodagem 2026")
+        # 🚗 Status Liberações ZP8
+        ### Rodagem 2026
+        """)
+
 
         import plotly.graph_objects as go
+        import pandas as pd
 
-        try:
-            df = pd.read_csv("dados_rodagem.csv")
-
-        except FileNotFoundError:
-            st.error("Arquivo dados_rodagem.csv não encontrado.")
-            return
-
+        df = pd.read_csv("dados_rodagem.csv")
         df.columns = df.columns.str.strip()
         df.columns = ["Mes", "Prevista", "Liberados"]
 
@@ -1497,84 +1264,121 @@ def painel():
 
         fig = go.Figure()
 
-        fig.add_trace(go.Bar(
-            name="Rodagem Prevista",
-            x=meses,
-            y=prevista,
-            text=[v if v is not None else "" for v in prevista],
-            textposition="outside",
-            marker_color="#0D4671"
-        ))
 
         fig.add_trace(go.Bar(
-            name="Veículos Liberados",
-            x=meses,
-            y=liberados,
-            text=[v if v is not None else "" for v in liberados],
-            textposition="outside",
-            marker_color="#00B0F0"
-        ))
+        name="Rodagem Prevista",
+        x=meses,
+        y=prevista,
+        text=[v if v is not None else "" for v in prevista],
+        textposition="outside"
+))
+
+        fig.add_trace(go.Bar(
+        name="Veículos Liberados",
+        x=meses,
+        y=liberados,
+        text=[v if v is not None else "" for v in liberados],
+        textposition="outside"
+))
+
 
         fig.update_layout(
-            margin=dict(b=80),
-            barmode="group",
-            plot_bgcolor="#FFFFFF",
-            paper_bgcolor="#FFFFFF",
-            font=dict(color="#1A1D22", family="Inter, sans-serif"),
-            hovermode="x unified",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            annotations=[
-                dict(
-                    text="<b>2026</b>",
-                    x=0.5,
-                    y=-0.22,
-                    xref="paper",
-                    yref="paper",
-                    showarrow=False,
-                    font=dict(size=16, color="#001E50")
-                )
-            ]
-        )
+    margin=dict(b=80),
 
-        col1, col2 = st.columns([3, 1])
+    annotations=[
+        dict(
+            text="<b>2026</b>",
+            x=0.5,
+            y=-0.22,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+            font=dict(
+                size=18,
+                color="white"
+            )
+        )
+    ]
+)
+        
+        
+        col1, col2 = st.columns([3,1])
 
         with col1:
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
+
             total_prevista = sum(v for v in prevista if v is not None)
             total_liberados = sum(v for v in liberados if v is not None)
 
-            percentual = (
-                (total_liberados / total_prevista) * 100
-                if total_prevista > 0
-                else 0
-            )
+            st.markdown("### 📊 Totais")
 
-            st.markdown("#### 📊 Totais")
+            percentual = (total_liberados / total_prevista) * 100 if total_prevista > 0 else 0
+
+            
+            if percentual >= 80:
+                st.success(f"✅ Rodagem dentro da meta ({percentual:.1f}%)")
+
+            elif percentual >= 50:
+                st.warning(f"⚠️ Atenção ({percentual:.1f}%)")
+
+            else:
+                st.error(f"🔴 Abaixo da meta ({percentual:.1f}%)")
+
 
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
             st.metric("🎯 % Liberação", f"{percentual:.1f}%")
 
+            restante = total_prevista - total_liberados
+
+            fig_pizza = go.Figure(data=[go.Pie(
+            labels=["Liberados", "Restante"],
+            values=[total_liberados, restante],
+            hole=0.5,
+            domain=dict(x=[0, 1], y=[0, 1])
+            )])
+
+            fig_pizza.update_traces(
+            textinfo="percent",
+            textposition="outside",
+            marker=dict(colors=["#1E88E5", "#90CAF9"])
+            )
+
+            
+            percentual = (total_liberados / total_prevista) * 100
+
+            fig_pizza.update_layout(
+                showlegend=False,
+                height=350,
+                annotations=[
+                    dict(
+                            text=f"<b>{percentual:.1f}%</b><br>Concluído",
+                            showarrow=False,
+                            font=dict(size=18,color="white")
+        )
+    ]
+)
+
+
+            st.plotly_chart(fig_pizza, use_container_width=True)
+
 
 
     # ======================
-    # GMP21
+    # OUTROS
     # ======================
     elif pagina == "GMP21":
+
         if "GMP21" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
-
         botao_voltar()
         st.subheader("GMP21 Budget")
-        pagina_input_budget_gmp21()
 
-    # ======================
-    # KPM
-    # ======================
     elif pagina == "KPM":
+    
         if "KPM" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1582,23 +1386,17 @@ def painel():
         botao_voltar()
         st.subheader("Dashboard KPM")
 
-    # ======================
-    # STATUS
-    # ======================
     elif pagina == "STATUS":
+
         if "STATUS" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
 
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
-        st.divider()
-        Comparativo_MIS_PDF()
 
-    # ======================
-    # OVERDUE
-    # ======================
     elif pagina == "OVERDUE":
+
         if "OVERDUE" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1607,21 +1405,21 @@ def painel():
         st.subheader("Overdue Streifenlist Dashboard")
 
 
-# ======================================================
+# =========================================
 # LOGOUT
-# ======================================================
+# =========================================
 def logout():
     st.session_state.logado = False
     st.session_state.pagina_atual = "HOME"
     st.rerun()
 
 
-# ======================================================
+# =========================================
 # FLUXO PRINCIPAL DO APP
-# ======================================================
+# =========================================
 if st.session_state.get("logado", False):
     painel()
 else:
-    inject_css()
     aplicar_background_login()
+    mostrar_data_kw()
     tela_login()
