@@ -40,13 +40,10 @@ if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
 
 
 # ======================================================
-# IDENTIDADE VISUAL VOLKSWAGEN (design tokens)
+# IDENTIDADE VISUAL VOLKSWAGEN
 # ======================================================
 VW_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
 
-# Paleta oficial: Navy #001E50 é a cor primária da marca VW.
-# Azul elétrico é usado como cor de destaque/ação (CTA), cinza neutro para fundo,
-# e uma escala de cinza-texto para hierarquia tipográfica.
 VW_CSS_VARS = """
 :root {
     --vw-navy: #001E50;
@@ -67,40 +64,58 @@ VW_CSS_VARS = """
 
 
 def inject_css():
-    st.markdown(f"""
-    <style>
+    css = """
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-    {VW_CSS_VARS}
 
     html,
     body,
-    .stApp {{
+    .stApp {
         font-family: var(--vw-font) !important;
-        color: var(--vw-text);
-    }}
-    h1, h2, h3, h4, h5, h6,
+        color: var(--vw-text) !important;
+    }
+
+    .stApp {
+        background: var(--vw-bg);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--vw-navy) !important;
+    }
+
     p,
     span,
     label,
-    div[data-testid="stMarkdownContainer"] {{
-            color: var(--vw-text) !important;
-        }}
-        
-    .stApp {{
-        background: var(--vw-bg);
-    }}
+    div[data-testid="stMarkdownContainer"] {
+        color: var(--vw-text) !important;
+    }
 
-    section[data-testid="stSidebar"] {{
+    div[data-testid="stCaptionContainer"] {
+        color: var(--vw-text-muted) !important;
+    }
+
+    div[data-testid="stMetric"] {
+        color: var(--vw-text) !important;
+    }
+
+    div[data-testid="stMetricValue"] {
+        color: var(--vw-navy) !important;
+        font-weight: 800 !important;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: var(--vw-text-muted) !important;
+        font-weight: 600 !important;
+    }
+
+    section[data-testid="stSidebar"] {
         background: var(--vw-navy);
-    }}
+    }
 
-    section[data-testid="stSidebar"] * {{
+    section[data-testid="stSidebar"] * {
         color: var(--vw-white) !important;
-    }}
+    }
 
-    /* Cabeçalho institucional fixo */
-    .vw-topbar {{
+    .vw-topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -109,56 +124,55 @@ def inject_css():
         border-radius: var(--vw-radius);
         margin-bottom: 22px;
         box-shadow: 0 2px 10px rgba(0,30,80,0.18);
-    }}
+    }
 
-    .vw-topbar-left {{
+    .vw-topbar-left {
         display: flex;
         align-items: center;
         gap: 14px;
-    }}
+    }
 
-    .vw-topbar-left img {{
+    .vw-topbar-left img {
         height: 30px;
         filter: brightness(0) invert(1);
-    }}
+    }
 
-    .vw-topbar-title {{
-        color: var(--vw-white);
+    .vw-topbar-title {
+        color: var(--vw-white) !important;
         font-weight: 700;
         font-size: 18px;
         letter-spacing: 0.2px;
-    }}
+    }
 
-    .vw-topbar-sub {{
-        color: rgba(255,255,255,0.65);
+    .vw-topbar-sub {
+        color: rgba(255,255,255,0.70) !important;
         font-size: 12px;
         font-weight: 400;
-    }}
+    }
 
-    .vw-topbar-right {{
+    .vw-topbar-right {
         display: flex;
         align-items: center;
         gap: 18px;
-        color: rgba(255,255,255,0.85);
+        color: rgba(255,255,255,0.85) !important;
         font-size: 13px;
-    }}
+    }
 
-    .vw-chip {{
+    .vw-chip {
         background: rgba(255,255,255,0.10);
         border: 1px solid rgba(255,255,255,0.18);
         padding: 5px 12px;
         border-radius: 999px;
         font-size: 12px;
-        color: var(--vw-white);
-    }}
+        color: var(--vw-white) !important;
+    }
 
-    /* Inputs */
-    input[type="text"], input[type="password"] {{
+    input[type="text"],
+    input[type="password"] {
         border-radius: 8px !important;
-    }}
+    }
 
-    /* Botões primários */
-    .stButton > button {{
+    .stButton > button {
         background: var(--vw-navy);
         color: var(--vw-white);
         border: none;
@@ -166,30 +180,27 @@ def inject_css():
         font-weight: 600;
         padding: 8px 18px;
         transition: background 0.15s ease;
-    }}
+    }
 
-    .stButton > button:hover {{
+    .stButton > button:hover {
         background: var(--vw-blue);
         color: var(--vw-navy-dark);
-    }}
+    }
 
-    .stDownloadButton > button {{
+    .stDownloadButton > button {
         background: var(--vw-white);
         color: var(--vw-navy);
         border: 1.5px solid var(--vw-navy);
         border-radius: 8px;
         font-weight: 600;
-    }}
+    }
 
-    .stDownloadButton > button:hover {{
+    .stDownloadButton > button:hover {
         background: var(--vw-navy);
         color: var(--vw-white);
-    }}
+    }
 
-    /* ============================= */
-    /* CARDS DE ACESSO RÁPIDO        */
-    /* ============================= */
-    .vw-card {{
+    .vw-card {
         height: 138px;
         border-radius: var(--vw-radius);
         padding: 18px 20px;
@@ -199,99 +210,100 @@ def inject_css():
         overflow: hidden;
         border: 1px solid rgba(255,255,255,0.06);
         transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }}
+    }
 
-    .vw-card:hover {{
+    .vw-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 18px rgba(0,30,80,0.22);
-    }}
+    }
 
-    .vw-card-accent {{
+    .vw-card-accent {
         position: absolute;
-        top: 0; left: 0;
-        width: 4px; height: 100%;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
         background: var(--vw-blue);
-    }}
+    }
 
-    .vw-card-eyebrow {{
+    .vw-card-eyebrow {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: var(--vw-blue);
+        color: var(--vw-blue) !important;
         font-weight: 700;
         margin-bottom: 6px;
-    }}
+    }
 
-    .vw-card-title {{
+    .vw-card-title {
         font-size: 15px;
         font-weight: 700;
         line-height: 1.3;
-    }}
+        color: var(--vw-white) !important;
+    }
 
-    .vw-card-glyph {{
+    .vw-card-glyph {
         position: absolute;
         right: 12px;
         bottom: -6px;
         font-size: 90px;
         font-weight: 800;
-        color: rgba(255,255,255,0.07);
+        color: rgba(255,255,255,0.07) !important;
         line-height: 1;
-    }}
+    }
 
-    .vw-card-locked {{
+    .vw-card-locked {
         height: 138px;
         border-radius: var(--vw-radius);
         padding: 18px 20px;
         background: #E9ECF1;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 13px;
         border: 1px dashed var(--vw-border);
-    }}
+    }
 
-    /* Cards de links/ferramentas */
-    .vw-link-card {{
+    .vw-link-card {
         border-radius: var(--vw-radius);
         padding: 16px;
         background: var(--vw-white);
         border: 1px solid var(--vw-border);
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }}
+    }
 
-    .vw-link-card-title {{
+    .vw-link-card-title {
         font-size: 14px;
         font-weight: 700;
-        color: var(--vw-navy);
+        color: var(--vw-navy) !important;
         margin-bottom: 4px;
-    }}
+    }
 
-    .vw-link-card-desc {{
+    .vw-link-card-desc {
         font-size: 12px;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         margin-bottom: 12px;
-    }}
+    }
 
-    .vw-tag {{
+    .vw-tag {
         font-size: 11px;
         font-weight: 600;
         background: var(--vw-navy);
-        color: var(--vw-white);
+        color: var(--vw-white) !important;
         padding: 3px 10px;
         border-radius: 999px;
         white-space: nowrap;
-    }}
+    }
 
-    .vw-link-anchor {{
+    .vw-link-anchor {
         color: var(--vw-blue) !important;
         font-weight: 600;
         font-size: 12px;
         text-decoration: none;
-    }}
+    }
 
-    /* Login */
-    .vw-login-box {{
+    .vw-login-box {
         width: 360px;
         margin: 64px auto 0 auto;
         padding: 32px 28px;
@@ -300,32 +312,36 @@ def inject_css():
         box-shadow: 0 10px 40px rgba(0,0,0,0.25);
         text-align: center;
         border: 1px solid rgba(255,255,255,0.4);
-    }}
+    }
 
-    .vw-login-box img {{
+    .vw-login-box img {
         height: 42px;
         margin-bottom: 14px;
-    }}
+    }
 
-    .vw-login-title {{
+    .vw-login-title {
         font-size: 21px;
         font-weight: 800;
-        color: var(--vw-navy);
+        color: var(--vw-navy) !important;
         margin-top: 2px;
-    }}
+    }
 
-    .vw-login-sub {{
+    .vw-login-sub {
         font-size: 12.5px;
-        color: var(--vw-text-muted);
+        color: var(--vw-text-muted) !important;
         margin-bottom: 18px;
         letter-spacing: 0.2px;
-    }}
+    }
 
-    hr {{
+    hr {
         border-color: var(--vw-border) !important;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+    }
+    """
+
+    st.markdown(
+        "<style>" + VW_CSS_VARS + css + "</style>",
+        unsafe_allow_html=True
+    )
 
 
 # ======================================================
@@ -346,7 +362,6 @@ USUARIOS = {
 PERMISSOES = {
     "aannutb": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
     "admin": ["KPM", "GMP21", "STATUS", "ENTREGA VEICULOS QA", "OVERDUE"],
-
     "ufcmart": ["ENTREGA VEICULOS QA"],
     "vyplfbt": ["ENTREGA VEICULOS QA"],
     "gibvvr7": ["ENTREGA VEICULOS QA"]
@@ -370,16 +385,19 @@ def aplicar_background_login():
     img = Path("login_bg.png")
 
     if img.exists():
+        bg64 = base64.b64encode(img.read_bytes()).decode()
+
         st.markdown(
             f"""
             <style>
             .stApp {{
                 background-image:
                     linear-gradient(rgba(0,19,51,0.55), rgba(0,19,51,0.55)),
-                    url("data:image/png;base64,{base64.b64encode(img.read_bytes()).decode()}");
+                    url("data:image/png;base64,{bg64}");
                 background-size: cover;
                 background-position: center;
             }}
+
             section[data-testid="stSidebar"] {{
                 display: none;
             }}
@@ -394,6 +412,7 @@ def aplicar_background_login():
             .stApp {
                 background: linear-gradient(135deg, #001E50 0%, #0D4671 60%, #00B0F0 130%);
             }
+
             section[data-testid="stSidebar"] {
                 display: none;
             }
@@ -409,21 +428,26 @@ def data_kw_atual():
 
 
 def topbar(usuario=""):
-    st.markdown(f"""
-    <div class="vw-topbar">
-        <div class="vw-topbar-left">
-            <img src="{VW_LOGO_URL}" />
-            <div>
-                <div class="vw-topbar-title">Design for Quality</div>
-                <div class="vw-topbar-sub">Engenharia de Protótipo · Qualidade VW do Brasil</div>
+    user_chip = f'<span class="vw-chip">👤 {usuario}</span>' if usuario else ""
+
+    st.markdown(
+        f"""
+        <div class="vw-topbar">
+            <div class="vw-topbar-left">
+                {VW_LOGO_URL}
+                <div>
+                    <div class="vw-topbar-title">Design for Quality</div>
+                    <div class="vw-topbar-sub">Engenharia de Protótipo · Qualidade VW do Brasil</div>
+                </div>
+            </div>
+            <div class="vw-topbar-right">
+                <span class="vw-chip">📅 {data_kw_atual()}</span>
+                {user_chip}
             </div>
         </div>
-        <div class="vw-topbar-right">
-            <span class="vw-chip">📅 {data_kw_atual()}</span>
-            {f'<span class="vw-chip">👤 {usuario}</span>' if usuario else ''}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ======================================================
@@ -550,9 +574,6 @@ def extrair_titulo_pdf(file_bytes):
 
 
 def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
-    """
-    Extrai os valores MIS12 e MIS36 do PDF para o ano informado.
-    """
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
@@ -587,7 +608,6 @@ def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
     mis_cols = [m for m in mis_cols if not (m in seen or seen.add(m))]
 
     years = sorted({int(y) for y in re.findall(r"\b20\d{2}\b", t)})
-
     ano = int(ano_alvo)
 
     if ano not in years:
@@ -614,11 +634,8 @@ def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
     nums = re.findall(r"-?\d+(?:\.\d{3})*,\d+|-?\d+,\d+", block)
     vals = [_to_float_ptbr_num(n) for n in nums]
 
-    # FIX: a versão anterior tentava usar a lista `mis_cols` como se fosse uma função
-    # (`mis_cols(vals[i]...)`), o que gerava um TypeError em tempo de execução.
-    # O correto é montar o dicionário {nome_da_coluna: valor}.
     mapping = {
-        mis_cols[i]: (vals[i] if i < len(vals) else None)
+        mis_cols(vals[i] if i < len(vals) else None)
         for i in range(len(mis_cols))
     }
 
@@ -737,94 +754,6 @@ def responder_dashboard(pergunta, historico=None):
     return resp.choices[0].message.content
 
 
-def pagina_input_budget_gmp21():
-    st.subheader("🔎 Consulta de Milestone (GMP21)")
-
-    modelo = st.selectbox(
-        "Projeto / Plataforma",
-        ["Plataformas - Milestone"]
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        ano = st.selectbox("Ano", [2027, 2028, 2029, 2030, 2031])
-
-    with col2:
-        mes = st.selectbox("Mês", list(range(1, 13)))
-
-    tipo_milestone = st.selectbox(
-        "Tipo de Milestone",
-        ["PLATAFORMA", "HUT", "MOTOR"]
-    )
-
-    mapa_milestones = {
-        "PLATAFORMA": ["PM/PP", "PD/ZV", "PF", "KF", "PLF", "BF", "LF", "VFF", "PVS", "O-S", "SOP", "ME"],
-        "HUT": ["PS", "PM/PP", "PD/ZV", "PF", "KF", "PLF", "BF", "LF", "VFF", "PVS", "O-S", "SOP", "ME"],
-        "MOTOR": ["KB-A", "PF-A", "AE", "TF", "BF-A", "HSF", "VFF-A", "PVS-A", "O-S A", "SOP-A"]
-    }
-
-    milestone = st.selectbox("Milestone", mapa_milestones[tipo_milestone])
-
-    mapa_tempo = {
-        "PLATAFORMA": {
-            (2027, 3): "PM/PP",
-            (2027, 6): "PD/ZV",
-            (2027, 9): "PF",
-            (2027, 12): "KF",
-            (2028, 7): "PLF",
-            (2028, 12): "BF",
-            (2029, 6): "LF",
-            (2030, 1): "VFF",
-            (2030, 3): "PVS",
-            (2030, 8): "O-S",
-            (2031, 1): "SOP",
-            (2031, 4): "ME"
-        },
-
-        "HUT": {
-            (2027, 1): "PS",
-            (2027, 6): "PM/PP",
-            (2027, 9): "PD/ZV",
-            (2027, 11): "PF",
-            (2028, 3): "KF",
-            (2028, 10): "PLF",
-            (2029, 3): "BF",
-            (2029, 9): "LF",
-            (2030, 1): "VFF",
-            (2030, 3): "PVS",
-            (2030, 8): "O-S",
-            (2031, 1): "SOP",
-            (2031, 4): "ME"
-        },
-
-        "MOTOR": {
-            (2027, 1): "KB-A",
-            (2027, 5): "PF-A",
-            (2027, 11): "AE",
-            (2028, 7): "TF",
-            (2029, 2): "BF-A",
-            (2029, 9): "HSF",
-            (2029, 12): "VFF-A",
-            (2030, 2): "PVS-A",
-            (2030, 7): "O-S A",
-            (2030, 12): "SOP-A"
-        }
-    }
-
-    milestone_esperado = mapa_tempo.get(tipo_milestone, {}).get((ano, mes))
-
-    if milestone_esperado:
-        if milestone_esperado != milestone:
-            st.warning(
-                f"⚠️ Para {mes}/{ano} o correto é {milestone_esperado} ({tipo_milestone})"
-            )
-        else:
-            st.success("✅ Milestone correto")
-    else:
-        st.info("ℹ️ Esse mês não possui milestone definido")
-
-
 def pagina_copiloto_ia():
     st.subheader("🤖 Copiloto IA")
 
@@ -887,6 +816,93 @@ def pagina_copiloto_ia():
         except Exception as e:
             st.error("❌ Erro ao chamar o Azure OpenAI.")
             st.exception(e)
+
+
+# ======================================================
+# GMP21
+# ======================================================
+def pagina_input_budget_gmp21():
+    st.subheader("🔎 Consulta de Milestone (GMP21)")
+
+    st.selectbox(
+        "Projeto / Plataforma",
+        ["Plataformas - Milestone"]
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        ano = st.selectbox("Ano", [2027, 2028, 2029, 2030, 2031])
+
+    with col2:
+        mes = st.selectbox("Mês", list(range(1, 13)))
+
+    tipo_milestone = st.selectbox(
+        "Tipo de Milestone",
+        ["PLATAFORMA", "HUT", "MOTOR"]
+    )
+
+    mapa_milestones = {
+        "PLATAFORMA": ["PM/PP", "PD/ZV", "PF", "KF", "PLF", "BF", "LF", "VFF", "PVS", "O-S", "SOP", "ME"],
+        "HUT": ["PS", "PM/PP", "PD/ZV", "PF", "KF", "PLF", "BF", "LF", "VFF", "PVS", "O-S", "SOP", "ME"],
+        "MOTOR": ["KB-A", "PF-A", "AE", "TF", "BF-A", "HSF", "VFF-A", "PVS-A", "O-S A", "SOP-A"]
+    }
+
+    milestone = st.selectbox("Milestone", mapa_milestones[tipo_milestone])
+
+    mapa_tempo = {
+        "PLATAFORMA": {
+            (2027, 3): "PM/PP",
+            (2027, 6): "PD/ZV",
+            (2027, 9): "PF",
+            (2027, 12): "KF",
+            (2028, 7): "PLF",
+            (2028, 12): "BF",
+            (2029, 6): "LF",
+            (2030, 1): "VFF",
+            (2030, 3): "PVS",
+            (2030, 8): "O-S",
+            (2031, 1): "SOP",
+            (2031, 4): "ME"
+        },
+        "HUT": {
+            (2027, 1): "PS",
+            (2027, 6): "PM/PP",
+            (2027, 9): "PD/ZV",
+            (2027, 11): "PF",
+            (2028, 3): "KF",
+            (2028, 10): "PLF",
+            (2029, 3): "BF",
+            (2029, 9): "LF",
+            (2030, 1): "VFF",
+            (2030, 3): "PVS",
+            (2030, 8): "O-S",
+            (2031, 1): "SOP",
+            (2031, 4): "ME"
+        },
+        "MOTOR": {
+            (2027, 1): "KB-A",
+            (2027, 5): "PF-A",
+            (2027, 11): "AE",
+            (2028, 7): "TF",
+            (2029, 2): "BF-A",
+            (2029, 9): "HSF",
+            (2029, 12): "VFF-A",
+            (2030, 2): "PVS-A",
+            (2030, 7): "O-S A",
+            (2030, 12): "SOP-A"
+        }
+    }
+
+    milestone_esperado = mapa_tempo.get(tipo_milestone, {}).get((ano, mes))
+
+    if milestone_esperado:
+        if milestone_esperado != milestone:
+            st.warning(f"⚠️ Para {mes}/{ano} o correto é {milestone_esperado} ({tipo_milestone})")
+        else:
+            st.success("✅ Milestone correto")
+    else:
+        st.info("ℹ️ Esse mês não possui milestone definido")
 
 
 # ======================================================
@@ -1215,13 +1231,16 @@ def Comparativo_MIS_PDF():
 # LOGIN
 # ======================================================
 def tela_login():
-    st.markdown(f"""
-    <div class="vw-login-box">
-        <img src="{VW_LOGO_URL}" />
-        <div class="vw-login-title">Design for Quality</div>
-        <div class="vw-login-sub">Sistema de Qualidade · Volkswagen do Brasil</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="vw-login-box">
+            {VW_LOGO_URL}
+            <div class="vw-login-title">Design for Quality</div>
+            <div class="vw-login-sub">Sistema de Qualidade · Volkswagen do Brasil</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     col1, col2, col3 = st.columns([3, 4, 3])
 
@@ -1277,7 +1296,6 @@ def pagina_links_ferramentas():
     ]
 
     colA, colB, colC = st.columns(3)
-
     cols = [colA, colB, colC]
 
     for i, r in enumerate(recursos):
@@ -1286,21 +1304,21 @@ def pagina_links_ferramentas():
             is_http = url.lower().startswith("http")
 
             if is_http:
-                link_html = f'<a class="vw-link-anchor" href="{url}" target="_blank">Abrir ↗</a>'
+                link_html = f'{url}Abrir ↗</a>'
             else:
                 link_html = f'<span style="font-size:12px;opacity:.9;">{url}</span>'
 
             st.markdown(
                 f"""
                 <div class="vw-link-card">
-                  <div class="vw-link-card-title">{r['nome']}</div>
-                  <div class="vw-link-card-desc">{r['desc']}</div>
-                  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                    <span class="vw-tag">{r['tag']}</span>
-                    <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">
-                      {link_html}
+                    <div class="vw-link-card-title">{r['nome']}</div>
+                    <div class="vw-link-card-desc">{r['desc']}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                        <span class="vw-tag">{r['tag']}</span>
+                        <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">
+                            {link_html}
+                        </div>
                     </div>
-                  </div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -1373,27 +1391,30 @@ def botao_voltar():
         ir_para("HOME")
 
 
-# ======================================================
-# CARD DE ACESSO RÁPIDO (componente reutilizável)
-# ======================================================
 def render_card(titulo, categoria, glifo, key, tem_acesso):
     if tem_acesso:
-        st.markdown(f"""
-        <div class="vw-card">
-            <div class="vw-card-accent"></div>
-            <div class="vw-card-eyebrow">{categoria}</div>
-            <div class="vw-card-title">{titulo}</div>
-            <div class="vw-card-glyph">{glifo}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="vw-card">
+                <div class="vw-card-accent"></div>
+                <div class="vw-card-eyebrow">{categoria}</div>
+                <div class="vw-card-title">{titulo}</div>
+                <div class="vw-card-glyph">{glifo}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         return st.button("Acessar →", key=key, use_container_width=True)
-    else:
-        st.markdown("""
-        <div class="vw-card-locked">🔒 Sem acesso</div>
-        """, unsafe_allow_html=True)
 
-        return False
+    st.markdown(
+        """
+        <div class="vw-card-locked">🔒 Sem acesso</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return False
 
 
 # ======================================================
@@ -1422,16 +1443,16 @@ def painel():
 
     pagina = st.session_state.get("pagina_atual", "HOME")
 
-    # ======================
-    # HOME
-    # ======================
     if pagina == "HOME":
-        st.markdown("""
-        <h2 style="text-align:center; color:#001E50; margin-bottom:2px;">Acesso Rápido</h2>
-        <p style="text-align:center; color:#5B6472; font-size:13px; margin-top:0;">
-            Selecione um módulo para continuar
-        </p>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            """
+            <h2 style="text-align:center; color:#001E50; margin-bottom:2px;">Acesso Rápido</h2>
+            <p style="text-align:center; color:#5B6472; font-size:13px; margin-top:0;">
+                Selecione um módulo para continuar
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
 
         st.write("")
 
@@ -1461,9 +1482,6 @@ def painel():
         st.divider()
         pagina_links_ferramentas()
 
-    # ======================
-    # ENTREGA VEICULOS QA
-    # ======================
     elif pagina == "ENTREGA VEICULOS QA":
         if "ENTREGA VEICULOS QA" not in permissoes:
             st.warning("🚫 Acesso negado")
@@ -1471,16 +1489,16 @@ def painel():
 
         botao_voltar()
 
-        st.markdown("""
-                2<h2 style="color:#001E50;">
+        st.markdown(
+            """
+            <h2 style="color:#001E50; margin-bottom:0;">
                 🚗 Status Liberações ZP8
-                </h2>
-                """, unsafe_allow_html=True)
-                
+            </h2>
+            """,
+            unsafe_allow_html=True
+        )
+
         st.caption("Rodagem 2026")
-        [data-testid="stCaptionContainer"] {
-            color: #5B6472 !important;
-            }
 
         import plotly.graph_objects as go
 
@@ -1525,7 +1543,13 @@ def painel():
             paper_bgcolor="#FFFFFF",
             font=dict(color="#1A1D22", family="Inter, sans-serif"),
             hovermode="x unified",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
             annotations=[
                 dict(
                     text="<b>2026</b>",
@@ -1555,25 +1579,10 @@ def painel():
             )
 
             st.markdown("#### 📊 Totais")
-
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
             st.metric("🎯 % Liberação", f"{percentual:.1f}%")
 
-            div[data-testid="stMetric"] {
-                color: #1A1D22 !important;
-                }
-                div[data-testid="stMetricValue"] {
-                    color: #001E50 !important;
-                        font-weight: 700 !important;
-                        }
-                        div[data-testid="stMetricLabel"] {
-                            color: #5B6472 !important;
-                            }
-
-    # ======================
-    # GMP21
-    # ======================
     elif pagina == "GMP21":
         if "GMP21" not in permissoes:
             st.warning("🚫 Acesso negado")
@@ -1583,9 +1592,6 @@ def painel():
         st.subheader("GMP21 Budget")
         pagina_input_budget_gmp21()
 
-    # ======================
-    # KPM
-    # ======================
     elif pagina == "KPM":
         if "KPM" not in permissoes:
             st.warning("🚫 Acesso negado")
@@ -1594,9 +1600,6 @@ def painel():
         botao_voltar()
         st.subheader("Dashboard KPM")
 
-    # ======================
-    # STATUS
-    # ======================
     elif pagina == "STATUS":
         if "STATUS" not in permissoes:
             st.warning("🚫 Acesso negado")
@@ -1607,9 +1610,6 @@ def painel():
         st.divider()
         Comparativo_MIS_PDF()
 
-    # ======================
-    # OVERDUE
-    # ======================
     elif pagina == "OVERDUE":
         if "OVERDUE" not in permissoes:
             st.warning("🚫 Acesso negado")
