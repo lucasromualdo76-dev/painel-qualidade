@@ -1142,182 +1142,91 @@ def Comparativo_Custo_Reparo_Prognose():
 # COMPARATIVO PDF
 # ======================================================
 def Comparativo_MIS_PDF():
-    st.subheader("📄 Comparativo MIS12 e MIS36 (PDF)")
-
-    st.markdown("""
-    **Como funciona:** envie **2 PDFs**. O sistema identifica o título/código do relatório
-    e extrai os valores **MIS12** e **MIS36** do ano selecionado.
-    """)
-
-    colA, colB = st.columns(2)
-
-    with colA:
-        pdf_a = st.file_uploader("Upload PDF A", type=["pdf"], key="pdf_a")
-
-    with colB:
-        pdf_b = st.file_uploader("Upload PDF B", type=["pdf"], key="pdf_b")
-
-    if not pdf_a or not pdf_b:
-        st.info("Envie os dois PDFs para iniciar o comparativo.")
-        return
-
-    bytes_a = pdf_a.getvalue()
-    bytes_b = pdf_b.getvalue()
-
-    with st.spinner("Lendo títulos/códigos dos PDFs..."):
-        titulo_a = extrair_titulo_pdf(bytes_a) or "Não identificado"
-        titulo_b = extrair_titulo_pdf(bytes_b) or "Não identificado"
-
-    st.markdown("### 🏷️ Identificação dos PDFs")
-
-    c1, c2 = st.columns(2)
-
-    c1.info(f"**PDF A:** {titulo_a}")
-    c2.info(f"**PDF B:** {titulo_b}")
-
-    anos_disp = sorted(set(extrair_anos_pdf(bytes_a)) | set(extrair_anos_pdf(bytes_b)))
-
-    if not anos_disp:
-        st.error("Não foi possível identificar anos no PDF.")
-        return
-
-    default_ano = max(anos_disp)
-
-    ano_sel = st.selectbox(
-        "Ano para comparação",
-        options=anos_disp,
-        index=anos_disp.index(default_ano)
+    st.subheader("📄 Analise de Custo Garantia")   
+    pdf = st.file_uploader(
+    "Upload PDF AQUA",
+    type=["pdf"],
+    key="pdf_garantia"
+     )
+     excel = st.file_uploader(
+     "Upload Excel Reparo",
+     type=["xlsx"],
+     key="excel_garantia"
     )
 
-    with st.spinner("Extraindo MIS12/MIS36 do PDF A..."):
-        res_a = extrair_mis12_mis36_por_ano_pdf(bytes_a, int(ano_sel))
+    if not pdf or not excel:
+        st.info("Envie o PDF e o Excel.")
+        return
 
-    with st.spinner("Extraindo MIS12/MIS36 do PDF B..."):
-        res_b = extrair_mis12_mis36_por_ano_pdf(bytes_b, int(ano_sel))
+        bytes_pdf = pdf.getvalue()
+        anos = extrair_anos_pdf(bytes_pdf)4
+        if not anos:
+            st.error("Ano não encontrado no PDF.")
+            return
+        ano = max(anos)
 
-    def fmt_num(x):
-        if x is None:
-            return "—"
+        dados_pdf = extrair_mis12_mis36_por_ano_pdf(
+        bytes_pdf,
+        ano
+    )
+    mis12 = dados_pdf["MIS12"]
 
-        return f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    wb = load_workbook(
+        io.BytesIO(excel.getvalue()),
+        data_only=True
+    )
+    abas = wb.sheetnames
 
-    def delta(a, b):
-        if a is None or b is None:
-            return None
+    aba = st.selectbox(
+        "Selecione a aba",
+        abas
+    )
 
-        return b - a
+    valor_j = extrair_total_coluna_j_openpyxl(
+        excel,
+        aba
+    )
 
-    def delta_pct(a, b):
-        if a is None or b is None or a == 0:
-            return None
-
-        return (b - a) / a * 100.0
-
-    d_mis12 = delta(res_a["MIS12"], res_b["MIS12"])
-    p_mis12 = delta_pct(res_a["MIS12"], res_b["MIS12"])
-
-    d_mis36 = delta(res_a["MIS36"], res_b["MIS36"])
-    p_mis36 = delta_pct(res_a["MIS36"], res_b["MIS36"])
-
-    if (
-        res_a["MIS12"] is None
-        or res_a["MIS36"] is None
-        or res_b["MIS12"] is None
-        or res_b["MIS36"] is None
-    ):
-        st.warning("Algum valor não foi encontrado para este ano em um dos PDFs.")
-        st.write("Anos disponíveis PDF A:", res_a.get("anos_disponiveis", []))
-        st.write("Anos disponíveis PDF B:", res_b.get("anos_disponiveis", []))
+    resultado = (mis12 * valor_j) / 1000
 
     st.divider()
-    st.markdown("### ✅ Métricas")
+    st.markdown("## 🎯 Resultado da Análise")
+    col1, col2, col3 = st.columns(3)
 
-    c1, c2, c3, c4 = st.columns(4)
-
-    c1.metric("MIS12 - PDF A", fmt_num(res_a["MIS12"]))
-    c2.metric("MIS12 - PDF B", fmt_num(res_b["MIS12"]))
-    c3.metric("Δ MIS12 (B - A)", fmt_num(d_mis12))
-    c4.metric("Δ% MIS12", "—" if p_mis12 is None else f"{p_mis12:.1f}%")
-
-    c1, c2, c3, c4 = st.columns(4)
-
-    c1.metric("MIS36 - PDF A", fmt_num(res_a["MIS36"]))
-    c2.metric("MIS36 - PDF B", fmt_num(res_b["MIS36"]))
-    c3.metric("Δ MIS36 (B - A)", fmt_num(d_mis36))
-    c4.metric("Δ% MIS36", "—" if p_mis36 is None else f"{p_mis36:.1f}%")
-
-    st.divider()
-    st.markdown("### 📋 Tabela")
-
-    df = pd.DataFrame([
-        {
-            "PDF": "A",
-            "Título": titulo_a,
-            "Ano": int(ano_sel),
-            "MIS12": res_a["MIS12"],
-            "MIS36": res_a["MIS36"]
-        },
-        {
-            "PDF": "B",
-            "Título": titulo_b,
-            "Ano": int(ano_sel),
-            "MIS12": res_b["MIS12"],
-            "MIS36": res_b["MIS36"]
-        }
-    ])
-
-    df_view = df.copy()
-    df_view["MIS12"] = df_view["MIS12"].apply(fmt_num)
-    df_view["MIS36"] = df_view["MIS36"].apply(fmt_num)
-
-    st.dataframe(df_view, use_container_width=True)
-
-    st.markdown("### 📊 Visual")
-
-    df_plot = df.dropna(subset=["MIS12", "MIS36"], how="all").copy()
-
-    if len(df_plot):
-        df_melt = df_plot.melt(
-            id_vars=["PDF", "Título", "Ano"],
-            value_vars=["MIS12", "MIS36"],
-            var_name="MIS",
-            value_name="Valor"
+    col1.metric(
+        "MIS12",
+        f"{mis12:.2f}"
+    )
+    col2.metric(
+        "Último Valor Coluna J",
+        formatar_moeda_br(valor_j)
+    )
+    col3.metric(
+        "Resultado Final",
+        formatar_moeda_br(resultado)
         )
-
-        fig = px.bar(
-            df_melt,
-            x="MIS",
-            y="Valor",
-            color="PDF",
-            barmode="group",
-            text="Valor",
-            hover_data=["Título"],
-            color_discrete_sequence=["#001E50", "#00B0F0"]
-        )
-
-        fig.update_traces(
-            texttemplate="%{text:.2f}",
-            textposition="outside"
-        )
-
-        fig.update_layout(
-            plot_bgcolor="#FFFFFF",
-            paper_bgcolor="#FFFFFF",
-            font=dict(color="#1A1D22", family="Inter, sans-serif")
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-    else:
-        st.info("Sem valores suficientes para plotar.")
-
-    st.divider()
-
-    st.download_button(
-        "Baixar comparativo (CSV)",
-        data=df.to_csv(index=False).encode("utf-8"),
-        file_name=f"comparativo_MIS12_MIS36_{ano_sel}.csv",
-        mime="text/csv"
+    
+    st.markdown(
+    f"""
+    <div style="
+        background:#001E50;
+        padding:30px;
+        border-radius:15px;
+        text-align:center;
+        margin-top:20px;
+    ">
+        <h3 style="color:white;">
+            💰 Resultado da Análise
+        </h3>   
+        <h1 style="
+            color:#00B0F0;
+            font-size:50px;
+        ">
+            {formatar_moeda_br(resultado)}
+        </h1>
+    </div>
+    """,23
+    unsafe_allow_html=True
     )
 
 
@@ -1759,9 +1668,7 @@ def painel():
             return
 
         botao_voltar()
-        Comparativo_Custo_Reparo_Prognose()
-        st.divider()
-        Comparativo_MIS_PDF()
+        Analise_Custo_Garantia()
 
     # ======================
     # OVERDUE
