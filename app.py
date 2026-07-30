@@ -437,24 +437,6 @@ def inject_css():
     </style>
     """, unsafe_allow_html=True)
 
-    </style>
-    /* FILE UPLOADER */
-        section[data-testid="stFileUploader"] * {
-        color: #1A1D22 !important;
-}
-
-    section[data-testid="stFileUploader"] {
-        background: #FFFFFF !important;
-        border: 1px solid #DCE1E8 !important;
-        border-radius: 10px !important;
-}
-
-    section[data-testid="stFileUploader"] button {
-        background: #001E50 !important;
-        color: white !important;
-}
-    
-
 # ======================================================
 # USUÁRIOS
 # ======================================================
