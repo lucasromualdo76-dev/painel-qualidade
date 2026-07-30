@@ -1560,7 +1560,7 @@ def painel():
                 ir_para("GMP21")
 
         with col4:
-            if render_card("Análise Custo Reparo", "Financeiro", "S", "status", "STATUS" in permissoes):
+            if render_card("Análise Custo Garantia Peça ou Veiculo Completo", "Financeiro", "S", "status", "STATUS" in permissoes):
                 ir_para("STATUS")
 
         with col5:
