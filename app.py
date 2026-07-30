@@ -1572,9 +1572,11 @@ def painel():
         pagina_links_ferramentas()
 
     # ======================
+    # ======================
     # ENTREGA VEICULOS QA
     # ======================
     elif pagina == "ENTREGA VEICULOS QA":
+
         if "ENTREGA VEICULOS QA" not in permissoes:
             st.warning("🚫 Acesso negado")
             return
@@ -1582,11 +1584,11 @@ def painel():
         botao_voltar()
 
         st.markdown("""
-                <h2 style="color:#001E50;">
-                🚗 Status Liberações ZP8
-                </h2>
-                """, unsafe_allow_html=True)
-                
+        <h2 style="color:#001E50;">
+            🚗 Status Liberações ZP8
+        </h2>
+        """, unsafe_allow_html=True)
+
         st.caption("Rodagem 2026")
 
         import plotly.graph_objects as go
@@ -1607,32 +1609,53 @@ def painel():
 
         fig = go.Figure()
 
-        fig.add_trace(go.Bar(
-            name="Rodagem Prevista",
-            x=meses,
-            y=prevista,
-            text=[v if v is not None else "" for v in prevista],
-            textposition="outside",
-            marker_color="#0D4671"
-        ))
+        fig.add_trace(
+            go.Bar(
+                name="Rodagem Prevista",
+                x=meses,
+                y=prevista,
+                text=[v if v is not None else "" for v in prevista],
+                textposition="outside",
+                marker_color="#0D4671"
+            )
+        )
 
-        fig.add_trace(go.Bar(
-            name="Veículos Liberados",
-            x=meses,
-            y=liberados,
-            text=[v if v is not None else "" for v in liberados],
-            textposition="outside",
-            marker_color="#00B0F0"
-        ))
+        fig.add_trace(
+            go.Bar(
+                name="Veículos Liberados",
+                x=meses,
+                y=liberados,
+                text=[v if v is not None else "" for v in liberados],
+                textposition="outside",
+                marker_color="#00B0F0"
+            )
+        )
 
         fig.update_layout(
             margin=dict(b=80),
             barmode="group",
             plot_bgcolor="#FFFFFF",
             paper_bgcolor="#FFFFFF",
-            font=dict(color="#1A1D22", family="Inter, sans-serif"),
             hovermode="x unified",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+
+            font=dict(
+                family="Inter, sans-serif",
+                color="#1A1D22",
+                size=12
+            ),
+
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(
+                    color="#001E50",
+                    size=13
+                )
+            ),
+
             annotations=[
                 dict(
                     text="<b>2026</b>",
@@ -1641,9 +1664,26 @@ def painel():
                     xref="paper",
                     yref="paper",
                     showarrow=False,
-                    font=dict(size=16, color="#001E50")
+                    font=dict(
+                        size=16,
+                        color="#001E50"
+                    )
                 )
             ]
+        )
+
+        fig.update_xaxes(
+            tickfont=dict(
+                color="#1A1D22",
+                size=12
+            )
+        )
+
+        fig.update_yaxes(
+            tickfont=dict(
+                color="#1A1D22",
+                size=12
+            )
         )
 
         col1, col2 = st.columns([3, 1])
@@ -1652,8 +1692,16 @@ def painel():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            total_prevista = sum(v for v in prevista if v is not None)
-            total_liberados = sum(v for v in liberados if v is not None)
+
+            total_prevista = sum(
+                v for v in prevista
+                if v is not None
+            )
+
+            total_liberados = sum(
+                v for v in liberados
+                if v is not None
+            )
 
             percentual = (
                 (total_liberados / total_prevista) * 100
@@ -1663,10 +1711,20 @@ def painel():
 
             st.markdown("#### 📊 Totais")
 
-            st.metric("🚗 Prevista", total_prevista)
-            st.metric("✅ Liberados", total_liberados)
-            st.metric("🎯 % Liberação", f"{percentual:.1f}%")
+            st.metric(
+                "🚗 Prevista",
+                total_prevista
+            )
 
+            st.metric(
+                "✅ Liberados",
+                total_liberados
+            )
+
+            st.metric(
+                "🎯 % Liberação",
+                f"{percentual:.1f}%"
+            )
 
 
     # ======================
