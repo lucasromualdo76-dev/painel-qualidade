@@ -1556,7 +1556,7 @@ def painel():
                 ir_para("KPM")
 
         with col3:
-            if render_card("Prognose GMP21", "Budget", "G", "gmp21", "GMP21" in permissoes):
+            if render_card("Prognose", "Budget", "G", "gmp21", "GMP21" in permissoes):
                 ir_para("GMP21")
 
         with col4:
