@@ -1138,45 +1138,51 @@ def Comparativo_Custo_Reparo_Prognose():
     )
 
 
-# ======================================================
-# COMPARATIVO PDF
-# ======================================================
 def Analise_Custo_Garantia():
-    st.subheader("📄 Analise de Custo Garantia")   
-    
-            pdf = st.file_uploader(
-                "Upload PDF AQUA",
-                 type=["pdf"],
-                key="pdf_garantia"
+
+    st.subheader("📄 Analise de Custo Garantia")
+
+    pdf = st.file_uploader(
+        "Upload PDF AQUA",
+        type=["pdf"],
+        key="pdf_garantia"
     )
-            excel = st.file_uploader(
-                    "Upload Excel Reparo",
-                     type=["xlsx"],
-                     key="excel_garantia"
+
+    excel = st.file_uploader(
+        "Upload Excel Reparo",
+        type=["xlsx"],
+        key="excel_garantia"
     )
 
     if not pdf or not excel:
         st.info("Envie o PDF e o Excel.")
         return
 
-        bytes_pdf = pdf.getvalue()
-        anos = extrair_anos_pdf(bytes_pdf)4
-        if not anos:
-            st.error("Ano não encontrado no PDF.")
-            return
-        ano = max(anos)
+    bytes_pdf = pdf.getvalue()
 
-        dados_pdf = extrair_mis12_mis36_por_ano_pdf(
+    anos = extrair_anos_pdf(bytes_pdf)
+
+    if not anos:
+        st.error("Ano não encontrado no PDF.")
+        return
+
+    ano = max(anos)
+
+    dados_pdf = extrair_mis12_mis36_por_ano_pdf(
         bytes_pdf,
         ano
     )
+
     mis12 = dados_pdf["MIS12"]
 
-    wb = load_workbook(
+    if mis12 is None:
+        st.error("MIS12 não encontrado no PDF.")
+        return
+
+    abas = load_workbook(
         io.BytesIO(excel.getvalue()),
         data_only=True
-    )
-    abas = wb.sheetnames
+    ).sheetnames
 
     aba = st.selectbox(
         "Selecione a aba",
@@ -1188,48 +1194,57 @@ def Analise_Custo_Garantia():
         aba
     )
 
+    if valor_j is None:
+        st.error("Nenhum valor encontrado na Coluna J.")
+        return
+
     resultado = (mis12 * valor_j) / 1000
 
     st.divider()
+
     st.markdown("## 🎯 Resultado da Análise")
+
     col1, col2, col3 = st.columns(3)
 
     col1.metric(
         "MIS12",
         f"{mis12:.2f}"
     )
+
     col2.metric(
         "Último Valor Coluna J",
         formatar_moeda_br(valor_j)
     )
+
     col3.metric(
         "Resultado Final",
         formatar_moeda_br(resultado)
-        )
-    
-    st.markdown(
-    f"""
-    <div style="
-        background:#001E50;
-        padding:30px;
-        border-radius:15px;
-        text-align:center;
-        margin-top:20px;
-    ">
-        <h3 style="color:white;">
-            💰 Resultado da Análise
-        </h3>   
-        <h1 style="
-            color:#00B0F0;
-            font-size:50px;
-        ">
-            {formatar_moeda_br(resultado)}
-        </h1>
-    </div>
-    """,23
-    unsafe_allow_html=True
     )
 
+    st.markdown(
+        f"""
+        <div style="
+            background:#001E50;
+            padding:30px;
+            border-radius:15px;
+            text-align:center;
+            margin-top:20px;
+        ">
+            <h3 style="color:white;">
+                💰 Resultado da Análise
+            </h3>
+
+            <h1 style="
+                color:#00B0F0;
+                font-size:50px;
+            ">
+                {formatar_moeda_br(resultado)}
+            </h1>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ======================================================
 # LOGIN
