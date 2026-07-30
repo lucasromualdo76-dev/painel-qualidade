@@ -1,4 +1,4 @@
-me mande a programação completa com as alteraçoes que devem ser feitasimport streamlit as st
+import streamlit as st
 import pandas as pd
 import plotly.express as px
 import base64
