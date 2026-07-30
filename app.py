@@ -73,11 +73,20 @@ def inject_css():
 
     {VW_CSS_VARS}
 
-    html, body, [class*="css"] {{
+    html,
+    body,
+    .stApp {
         font-family: var(--vw-font) !important;
         color: var(--vw-text);
     }}
-
+    h1, h2, h3, h4, h5, h6,
+    p,
+    span,
+    label,
+    div[data-testid="stMarkdownContainer"] {
+            color: var(--vw-text) !important;
+        }
+        
     .stApp {{
         background: var(--vw-bg);
     }}
@@ -1462,8 +1471,16 @@ def painel():
 
         botao_voltar()
 
-        st.markdown("## 🚗 Status Liberações ZP8")
+        st.markdown("""
+                2<h2 style="color:#001E50;">
+                🚗 Status Liberações ZP8
+                </h2>
+                """, unsafe_allow_html=True)
+                
         st.caption("Rodagem 2026")
+        [data-testid="stCaptionContainer"] {
+            color: #5B6472 !important;
+            }
 
         import plotly.graph_objects as go
 
@@ -1542,6 +1559,17 @@ def painel():
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
             st.metric("🎯 % Liberação", f"{percentual:.1f}%")
+
+            div[data-testid="stMetric"] {
+                color: #1A1D22 !important;
+                }
+                div[data-testid="stMetricValue"] {
+                    color: #001E50 !important;
+                        font-weight: 700 !important;
+                        }
+                        div[data-testid="stMetricLabel"] {
+                            color: #5B6472 !important;
+                            }
 
     # ======================
     # GMP21
