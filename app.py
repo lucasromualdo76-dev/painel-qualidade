@@ -15,7 +15,11 @@ import pdfplumber
 # ======================================================
 # CONFIGURAÇÃO DA PÁGINA
 # ======================================================
-st.set_page_config(page_title="Painel de Qualidade", layout="wide")
+st.set_page_config(
+    page_title="Design for Quality | Volkswagen",
+    page_icon="🚗",
+    layout="wide"
+)
 
 
 # ======================================================
@@ -36,92 +40,283 @@ if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
 
 
 # ======================================================
-# CSS GLOBAL
+# IDENTIDADE VISUAL VOLKSWAGEN (design tokens)
 # ======================================================
-st.markdown("""
-<style>
-/* Input compacto */
-input[type="text"] {
-    height: 32px !important;
-    padding: 4px 8px !important;
-    font-size: 13px !important;
+VW_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
+
+# Paleta oficial: Navy #001E50 é a cor primária da marca VW.
+# Azul elétrico é usado como cor de destaque/ação (CTA), cinza neutro para fundo,
+# e uma escala de cinza-texto para hierarquia tipográfica.
+VW_CSS_VARS = """
+:root {
+    --vw-navy: #001E50;
+    --vw-navy-dark: #001133;
+    --vw-navy-light: #0D4671;
+    --vw-blue: #00B0F0;
+    --vw-white: #FFFFFF;
+    --vw-bg: #F3F5F8;
+    --vw-border: #DCE1E8;
+    --vw-text: #1A1D22;
+    --vw-text-muted: #5B6472;
+    --vw-success: #0F9D58;
+    --vw-danger: #C8102E;
+    --vw-radius: 10px;
+    --vw-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 }
+"""
 
-/* Botão compacto */
-button[data-testid="baseButton-secondary"],
-button[kind="secondary"] {
-    padding: 2px 10px !important;
-    font-size: 13px !important;
-    height: 32px !important;
-}
 
-/* Reduz espaçamento entre linhas */
-div[data-testid="stHorizontalBlock"] {
-    gap: 8px;
-    margin-bottom: 4px;
-}
+def inject_css():
+    st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* Badge do contato */
-.contato-suporte {
-    position: fixed;
-    top: 110px; 
-    right: 15px;
-    z-index: 9999;
-    font-size: 13px;
-    color: #ffffff;
-    background: rgba(0,0,0,0.45);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-family: Arial;
-}
+    {VW_CSS_VARS}
 
-/* ============================= */
-/* ESTILO DOS CARDS */
-/* ============================= */
+    html, body, [class*="css"] {{
+        font-family: var(--vw-font) !important;
+        color: var(--vw-text);
+    }}
 
-.card-custom {
-    height: 150px;
-    border-radius: 12px;
-    padding: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: 0.2s;
-}
+    .stApp {{
+        background: var(--vw-bg);
+    }}
 
-.card-custom:hover {
-    transform: scale(1.03);
-}
+    section[data-testid="stSidebar"] {{
+        background: var(--vw-navy);
+    }}
 
-.card-title {
-    font-size: 14px;
-    font-weight: bold;
-}
+    section[data-testid="stSidebar"] * {{
+        color: var(--vw-white) !important;
+    }}
 
-.card-bottom {
-    position: absolute;
-    bottom: 10px;
-    left: 12px;
-    font-size: 13px;
-}
+    /* Cabeçalho institucional fixo */
+    .vw-topbar {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--vw-navy);
+        padding: 14px 28px;
+        border-radius: var(--vw-radius);
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,30,80,0.18);
+    }}
 
-.card-bg-letter {
-    position: absolute;
-    right: 10px;
-    bottom: 0px;
-    font-size: 110px;
-    color: rgba(255,255,255,0.2);
-    font-weight: bold;
-}
+    .vw-topbar-left {{
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }}
 
-div[data-testid="stButton"] {
-    position: relative;
-}
-</style>
+    .vw-topbar-left img {{
+        height: 30px;
+        filter: brightness(0) invert(1);
+    }}
 
-<div class="contato-suporte">
-📩 <strong>Dúvidas:</strong> Lucas.silva9@volkswagen.com.br
-</div>
-""", unsafe_allow_html=True)
+    .vw-topbar-title {{
+        color: var(--vw-white);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.2px;
+    }}
+
+    .vw-topbar-sub {{
+        color: rgba(255,255,255,0.65);
+        font-size: 12px;
+        font-weight: 400;
+    }}
+
+    .vw-topbar-right {{
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: rgba(255,255,255,0.85);
+        font-size: 13px;
+    }}
+
+    .vw-chip {{
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--vw-white);
+    }}
+
+    /* Inputs */
+    input[type="text"], input[type="password"] {{
+        border-radius: 8px !important;
+    }}
+
+    /* Botões primários */
+    .stButton > button {{
+        background: var(--vw-navy);
+        color: var(--vw-white);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 18px;
+        transition: background 0.15s ease;
+    }}
+
+    .stButton > button:hover {{
+        background: var(--vw-blue);
+        color: var(--vw-navy-dark);
+    }}
+
+    .stDownloadButton > button {{
+        background: var(--vw-white);
+        color: var(--vw-navy);
+        border: 1.5px solid var(--vw-navy);
+        border-radius: 8px;
+        font-weight: 600;
+    }}
+
+    .stDownloadButton > button:hover {{
+        background: var(--vw-navy);
+        color: var(--vw-white);
+    }}
+
+    /* ============================= */
+    /* CARDS DE ACESSO RÁPIDO        */
+    /* ============================= */
+    .vw-card {{
+        height: 138px;
+        border-radius: var(--vw-radius);
+        padding: 18px 20px;
+        position: relative;
+        background: var(--vw-navy);
+        color: var(--vw-white);
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.06);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }}
+
+    .vw-card:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(0,30,80,0.22);
+    }}
+
+    .vw-card-accent {{
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px; height: 100%;
+        background: var(--vw-blue);
+    }}
+
+    .vw-card-eyebrow {{
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--vw-blue);
+        font-weight: 700;
+        margin-bottom: 6px;
+    }}
+
+    .vw-card-title {{
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.3;
+    }}
+
+    .vw-card-glyph {{
+        position: absolute;
+        right: 12px;
+        bottom: -6px;
+        font-size: 90px;
+        font-weight: 800;
+        color: rgba(255,255,255,0.07);
+        line-height: 1;
+    }}
+
+    .vw-card-locked {{
+        height: 138px;
+        border-radius: var(--vw-radius);
+        padding: 18px 20px;
+        background: #E9ECF1;
+        color: var(--vw-text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        border: 1px dashed var(--vw-border);
+    }}
+
+    /* Cards de links/ferramentas */
+    .vw-link-card {{
+        border-radius: var(--vw-radius);
+        padding: 16px;
+        background: var(--vw-white);
+        border: 1px solid var(--vw-border);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }}
+
+    .vw-link-card-title {{
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--vw-navy);
+        margin-bottom: 4px;
+    }}
+
+    .vw-link-card-desc {{
+        font-size: 12px;
+        color: var(--vw-text-muted);
+        margin-bottom: 12px;
+    }}
+
+    .vw-tag {{
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--vw-navy);
+        color: var(--vw-white);
+        padding: 3px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }}
+
+    .vw-link-anchor {{
+        color: var(--vw-blue) !important;
+        font-weight: 600;
+        font-size: 12px;
+        text-decoration: none;
+    }}
+
+    /* Login */
+    .vw-login-box {{
+        width: 360px;
+        margin: 64px auto 0 auto;
+        padding: 32px 28px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.4);
+    }}
+
+    .vw-login-box img {{
+        height: 42px;
+        margin-bottom: 14px;
+    }}
+
+    .vw-login-title {{
+        font-size: 21px;
+        font-weight: 800;
+        color: var(--vw-navy);
+        margin-top: 2px;
+    }}
+
+    .vw-login-sub {{
+        font-size: 12.5px;
+        color: var(--vw-text-muted);
+        margin-bottom: 18px;
+        letter-spacing: 0.2px;
+    }}
+
+    hr {{
+        border-color: var(--vw-border) !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
 
 # ======================================================
@@ -164,12 +359,15 @@ if "usuario" not in st.session_state:
 # ======================================================
 def aplicar_background_login():
     img = Path("login_bg.png")
+
     if img.exists():
         st.markdown(
             f"""
             <style>
             .stApp {{
-                background-image: url("data:image/png;base64,{base64.b64encode(img.read_bytes()).decode()}");
+                background-image:
+                    linear-gradient(rgba(0,19,51,0.55), rgba(0,19,51,0.55)),
+                    url("data:image/png;base64,{base64.b64encode(img.read_bytes()).decode()}");
                 background-size: cover;
                 background-position: center;
             }}
@@ -180,56 +378,41 @@ def aplicar_background_login():
             """,
             unsafe_allow_html=True
         )
+    else:
+        st.markdown(
+            """
+            <style>
+            .stApp {
+                background: linear-gradient(135deg, #001E50 0%, #0D4671 60%, #00B0F0 130%);
+            }
+            section[data-testid="stSidebar"] {
+                display: none;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
 
 def data_kw_atual():
     hoje = datetime.now()
-    return f"{hoje.strftime('%d/%m/%Y')} | KW {hoje.isocalendar().week}"
+    return f"{hoje.strftime('%d/%m/%Y')} · KW {hoje.isocalendar().week}"
 
 
-def mostrar_data_kw():
+def topbar(usuario=""):
     st.markdown(f"""
-    <div style="
-        position: fixed;
-        top: 70px;
-        right: 15px;
-        z-index: 9999;
-        font-size: 13px;
-        color: white;
-        background: rgba(0,0,0,0.45);
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-family: Arial;">
-        📅 <strong>{data_kw_atual()}</strong>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ======================================================
-# CARRINHO
-# ======================================================
-def mostrar_carrinho_animado_painel():
-    st.markdown("""
-    <style>
-    .faixa-painel { 
-        height: 40px; 
-        overflow: hidden; 
-    }
-
-    .carro {
-        position: relative;
-        font-size: 24px;
-        animation: mover 12s linear infinite alternate;
-    }
-
-    @keyframes mover {
-        from { left: 0; }
-        to { left: calc(100% - 40px); }
-    }
-    </style>
-
-    <div class="faixa-painel">
-        <div class="carro">🚗</div>
+    <div class="vw-topbar">
+        <div class="vw-topbar-left">
+            <img src="{VW_LOGO_URL}" />
+            <div>
+                <div class="vw-topbar-title">Design for Quality</div>
+                <div class="vw-topbar-sub">Engenharia de Protótipo · Qualidade VW do Brasil</div>
+            </div>
+        </div>
+        <div class="vw-topbar-right">
+            <span class="vw-chip">📅 {data_kw_atual()}</span>
+            {f'<span class="vw-chip">👤 {usuario}</span>' if usuario else ''}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -358,6 +541,9 @@ def extrair_titulo_pdf(file_bytes):
 
 
 def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
+    """
+    Extrai os valores MIS12 e MIS36 do PDF para o ano informado.
+    """
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             if not pdf.pages:
@@ -419,8 +605,11 @@ def extrair_mis12_mis36_por_ano_pdf(file_bytes, ano_alvo):
     nums = re.findall(r"-?\d+(?:\.\d{3})*,\d+|-?\d+,\d+", block)
     vals = [_to_float_ptbr_num(n) for n in nums]
 
+    # FIX: a versão anterior tentava usar a lista `mis_cols` como se fosse uma função
+    # (`mis_cols(vals[i]...)`), o que gerava um TypeError em tempo de execução.
+    # O correto é montar o dicionário {nome_da_coluna: valor}.
     mapping = {
-        mis_cols(vals[i] if i < len(vals) else None)
+        mis_cols[i]: (vals[i] if i < len(vals) else None)
         for i in range(len(mis_cols))
     }
 
@@ -439,7 +628,7 @@ def aba_agendamento_veiculos():
     st.subheader("🚗 Agendamento de Veículos")
 
     dia_selecionado = st.date_input(
-        "📅 Selecione o dia do agendamento",
+        "Selecione o dia do agendamento",
         value=date.today(),
         format="DD/MM/YYYY"
     )
@@ -489,7 +678,8 @@ def aba_agendamento_veiculos():
             placeholder="Descreva o motivo da utilização do veículo",
             value=dados["descricao"],
             disabled=dados["salvo"],
-            key=f"desc_{chave_dia}_{h}"
+            key=f"desc_{chave_dia}_{h}",
+            label_visibility="collapsed"
         )
 
         if dados["salvo"]:
@@ -794,7 +984,8 @@ def Comparativo_Custo_Reparo_Prognose():
             df_plot,
             x="Projeto/Aba",
             y="Total Coluna J",
-            text="Total Coluna J"
+            text="Total Coluna J",
+            color_discrete_sequence=["#001E50"]
         )
 
         fig.update_traces(
@@ -807,9 +998,9 @@ def Comparativo_Custo_Reparo_Prognose():
             title="Comparativo Custo Médio de Reparo",
             uniformtext_minsize=8,
             uniformtext_mode="hide",
-            plot_bgcolor="#030712",
-            paper_bgcolor="#030712",
-            font=dict(color="white"),
+            plot_bgcolor="#FFFFFF",
+            paper_bgcolor="#FFFFFF",
+            font=dict(color="#1A1D22", family="Inter, sans-serif"),
             hovermode="x unified"
         )
 
@@ -981,12 +1172,19 @@ def Comparativo_MIS_PDF():
             color="PDF",
             barmode="group",
             text="Valor",
-            hover_data=["Título"]
+            hover_data=["Título"],
+            color_discrete_sequence=["#001E50", "#00B0F0"]
         )
 
         fig.update_traces(
             texttemplate="%{text:.2f}",
             textposition="outside"
+        )
+
+        fig.update_layout(
+            plot_bgcolor="#FFFFFF",
+            paper_bgcolor="#FFFFFF",
+            font=dict(color="#1A1D22", family="Inter, sans-serif")
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -1008,48 +1206,11 @@ def Comparativo_MIS_PDF():
 # LOGIN
 # ======================================================
 def tela_login():
-    st.markdown("""
-    <style>
-    .login-box {
-        width: 320px;
-        margin: auto;
-        margin-top: 60px;
-        padding: 20px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.25);
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .titulo {
-        font-size: 22px;
-        font-weight: bold;
-        color: white;
-        margin-top: 8px;
-    }
-
-    .subtitulo {
-        font-size: 12px;
-        color: rgba(255,255,255,0.8);
-        margin-bottom: 15px;
-    }
-
-    .logo img {
-        width: 65px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="login-box">
-        <div class="logo">
-            https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg
-        </div>
-        <div class="titulo">Design for Quality</div>
-        <div class="subtitulo">Sistema de Qualidade</div>
+    st.markdown(f"""
+    <div class="vw-login-box">
+        <img src="{VW_LOGO_URL}" />
+        <div class="vw-login-title">Design for Quality</div>
+        <div class="vw-login-sub">Sistema de Qualidade · Volkswagen do Brasil</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1060,7 +1221,9 @@ def tela_login():
             user = st.text_input("Usuário REDE VW")
             pwd = st.text_input("Senha", type="password")
 
-            if st.form_submit_button("Entrar"):
+            entrar = st.form_submit_button("Entrar", use_container_width=True)
+
+            if entrar:
                 user = user.lower().strip()
 
                 if user in USUARIOS and USUARIOS[user] == pwd:
@@ -1114,18 +1277,18 @@ def pagina_links_ferramentas():
             is_http = url.lower().startswith("http")
 
             if is_http:
-                link_html = f'{url}Abrir ↗</a>'
+                link_html = f'<a class="vw-link-anchor" href="{url}" target="_blank">Abrir ↗</a>'
             else:
                 link_html = f'<span style="font-size:12px;opacity:.9;">{url}</span>'
 
             st.markdown(
                 f"""
-                <div style="border-radius:16px;padding:14px;background:#1118270f;border:1px solid #e5e7eb;">
-                  <div style="font-size:14px;font-weight:700;margin-bottom:6px;">{r['nome']}</div>
-                  <div style="font-size:12px;opacity:.85;margin-bottom:10px;">{r['desc']}</div>
+                <div class="vw-link-card">
+                  <div class="vw-link-card-title">{r['nome']}</div>
+                  <div class="vw-link-card-desc">{r['desc']}</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                    <span style="font-size:11px;background:#11182715;padding:3px 8px;border-radius:999px;white-space:nowrap;">{r['tag']}</span>
-                    <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;">
+                    <span class="vw-tag">{r['tag']}</span>
+                    <div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">
                       {link_html}
                     </div>
                   </div>
@@ -1202,178 +1365,105 @@ def botao_voltar():
 
 
 # ======================================================
+# CARD DE ACESSO RÁPIDO (componente reutilizável)
+# ======================================================
+def render_card(titulo, categoria, glifo, key, tem_acesso):
+    if tem_acesso:
+        st.markdown(f"""
+        <div class="vw-card">
+            <div class="vw-card-accent"></div>
+            <div class="vw-card-eyebrow">{categoria}</div>
+            <div class="vw-card-title">{titulo}</div>
+            <div class="vw-card-glyph">{glifo}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        return st.button("Acessar →", key=key, use_container_width=True)
+    else:
+        st.markdown("""
+        <div class="vw-card-locked">🔒 Sem acesso</div>
+        """, unsafe_allow_html=True)
+
+        return False
+
+
+# ======================================================
 # PAINEL PRINCIPAL
 # ======================================================
 def painel():
     sync_pagina_com_url()
-    mostrar_data_kw()
+    inject_css()
 
-    st.title("Design for Quality")
-
-    mostrar_carrinho_animado_painel()
-
-    if "subpagina" not in st.session_state:
-        st.session_state.subpagina = None
-
-    pagina = st.session_state.get("pagina_atual", "HOME")
     usuario = st.session_state.get("usuario", "")
     permissoes = PERMISSOES.get(usuario, [])
 
-    st.markdown("""
-    <style>
-    .card-custom {
-        height: 150px;
-        border-radius: 12px;
-        padding: 15px;
-        position: relative;
-        color: black;
-        cursor: pointer;
-    }
+    topbar(usuario)
 
-    .card-orange {
-        background: linear-gradient(135deg, #ffb37a, #ff7a00);
-    }
+    with st.sidebar:
+        st.markdown("### Navegação")
 
-    .card-blue {
-        background: linear-gradient(135deg, #64b5f6, #1565c0);
-        color: white;
-    }
+        if st.button("🏠 Início", use_container_width=True):
+            ir_para("HOME")
 
-    .card-red {
-        background: linear-gradient(135deg, #e53935, #8e0000);
-        color: white;
-    }
+        st.markdown("---")
+        st.markdown(f"**Usuário:** {usuario}")
 
-    .card-black {
-        background: linear-gradient(135deg, #444, #000);
-        color: white;
-    }
+        if st.button("🚪 Sair", use_container_width=True):
+            logout()
 
-    .card-title {
-        font-size: 14px;
-        font-weight: bold;
-    }
-
-    .card-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 16px;
-    }
-
-    .card-bg-letter {
-        position: absolute;
-        right: 10px;
-        bottom: 0px;
-        font-size: 110px;
-        color: rgba(255,255,255,0.2);
-        font-weight: bold;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    pagina = st.session_state.get("pagina_atual", "HOME")
 
     # ======================
     # HOME
     # ======================
     if pagina == "HOME":
         st.markdown("""
-        <h1 style="text-align: center;">Acesso Rápido</h1>
-        <hr style="width: 200px; margin: auto;">
+        <h2 style="text-align:center; color:#001E50; margin-bottom:2px;">Acesso Rápido</h2>
+        <p style="text-align:center; color:#5B6472; font-size:13px; margin-top:0;">
+            Selecione um módulo para continuar
+        </p>
         """, unsafe_allow_html=True)
+
+        st.write("")
 
         col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
-            if "OVERDUE" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-orange'>
-                    <div class='card-title'>Overdue Streifenlist</div>
-                    <div class='card-bottom'>Acessar</div>
-                    <div class='card-bg-letter'>O</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if st.button("Acessar", key="overdue"):
-                    st.session_state.pagina_atual = "OVERDUE"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            if render_card("Overdue Streifenlist", "Qualidade", "O", "overdue", "OVERDUE" in permissoes):
+                ir_para("OVERDUE")
 
         with col2:
-            if "KPM" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-black'>
-                    <div class='card-title'>KPI KPM</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>K</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if st.button("Acessar", key="kpm"):
-                    st.session_state.pagina_atual = "KPM"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            if render_card("KPI KPM", "Indicadores", "K", "kpm", "KPM" in permissoes):
+                ir_para("KPM")
 
         with col3:
-            if "GMP21" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-red'>
-                    <div class='card-title'>Prognose GMP21</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>G</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if st.button("Acessar", key="gmp21"):
-                    st.session_state.pagina_atual = "GMP21"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            if render_card("Prognose GMP21", "Budget", "G", "gmp21", "GMP21" in permissoes):
+                ir_para("GMP21")
 
         with col4:
-            if "STATUS" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-blue'>
-                    <div class='card-title'>Análise Custo Reparo</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>S</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if st.button("Acessar", key="status"):
-                    st.session_state.pagina_atual = "STATUS"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+            if render_card("Análise Custo Reparo", "Financeiro", "S", "status", "STATUS" in permissoes):
+                ir_para("STATUS")
 
         with col5:
-            if "ENTREGA VEICULOS QA" in permissoes:
-                st.markdown("""
-                <div class='card-custom card-orange'>
-                    <div class='card-title'>Entrega Veículos</div>
-                    <div class='card-center'>Acessar</div>
-                    <div class='card-bg-letter'>E</div>
-                </div>
-                """, unsafe_allow_html=True)
+            if render_card("Entrega Veículos", "Logística", "E", "entrega_veiculos_qa", "ENTREGA VEICULOS QA" in permissoes):
+                ir_para("ENTREGA VEICULOS QA")
 
-                if st.button("Acessar", key="entrega_veiculos_qa"):
-                    st.session_state.pagina_atual = "ENTREGA VEICULOS QA"
-                    st.rerun()
-            else:
-                st.markdown("<div class='card card-locked'>🔒 Sem acesso</div>", unsafe_allow_html=True)
+        st.write("")
+        st.divider()
+        pagina_links_ferramentas()
 
     # ======================
     # ENTREGA VEICULOS QA
     # ======================
     elif pagina == "ENTREGA VEICULOS QA":
+        if "ENTREGA VEICULOS QA" not in permissoes:
+            st.warning("🚫 Acesso negado")
+            return
+
         botao_voltar()
 
-        st.markdown("""
-        # 🚗 Status Liberações ZP8
-        ### Rodagem 2026
-        """)
+        st.markdown("## 🚗 Status Liberações ZP8")
+        st.caption("Rodagem 2026")
 
         import plotly.graph_objects as go
 
@@ -1398,7 +1488,8 @@ def painel():
             x=meses,
             y=prevista,
             text=[v if v is not None else "" for v in prevista],
-            textposition="outside"
+            textposition="outside",
+            marker_color="#0D4671"
         ))
 
         fig.add_trace(go.Bar(
@@ -1406,16 +1497,18 @@ def painel():
             x=meses,
             y=liberados,
             text=[v if v is not None else "" for v in liberados],
-            textposition="outside"
+            textposition="outside",
+            marker_color="#00B0F0"
         ))
 
         fig.update_layout(
             margin=dict(b=80),
             barmode="group",
-            plot_bgcolor="#030712",
-            paper_bgcolor="#030712",
-            font=dict(color="white"),
+            plot_bgcolor="#FFFFFF",
+            paper_bgcolor="#FFFFFF",
+            font=dict(color="#1A1D22", family="Inter, sans-serif"),
             hovermode="x unified",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             annotations=[
                 dict(
                     text="<b>2026</b>",
@@ -1424,10 +1517,7 @@ def painel():
                     xref="paper",
                     yref="paper",
                     showarrow=False,
-                    font=dict(
-                        size=18,
-                        color="white"
-                    )
+                    font=dict(size=16, color="#001E50")
                 )
             ]
         )
@@ -1447,7 +1537,7 @@ def painel():
                 else 0
             )
 
-            st.markdown("### 📊 Totais")
+            st.markdown("#### 📊 Totais")
 
             st.metric("🚗 Prevista", total_prevista)
             st.metric("✅ Liberados", total_liberados)
@@ -1486,6 +1576,8 @@ def painel():
 
         botao_voltar()
         Comparativo_Custo_Reparo_Prognose()
+        st.divider()
+        Comparativo_MIS_PDF()
 
     # ======================
     # OVERDUE
@@ -1514,6 +1606,6 @@ def logout():
 if st.session_state.get("logado", False):
     painel()
 else:
+    inject_css()
     aplicar_background_login()
-    mostrar_data_kw()
     tela_login()
