@@ -1545,6 +1545,32 @@ def painel():
         df.columns = df.columns.str.strip()
         df.columns = ["Mes", "Prevista", "Liberados"]
 
+# ======================================================
+# EDIÇÃO DOS DADOS NO PAINEL
+# ======================================================
+
+if st.session_state.usuario == "admin":
+
+    with st.expander("✏️ Editar dados da rodagem"):
+
+        df_editado = st.data_editor(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            num_rows="fixed"
+        )
+
+        if st.button("💾 Salvar Dados"):
+            df_editado.to_csv(
+                "dados_rodagem.csv",
+                index=False
+            )
+
+            st.success("Dados atualizados!")
+
+            df = df_editado.copy()
+
+
         meses = df["Mes"].tolist()
         prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
         liberados = [int(v) if pd.notna(v) else None for v in df["Liberados"]]
