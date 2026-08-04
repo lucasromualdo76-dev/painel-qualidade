@@ -5,3 +5,4 @@ openpyxl
 pdfplumber
 openai
 anthropic
+requests
