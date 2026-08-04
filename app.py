@@ -1514,7 +1514,6 @@ def painel():
         pagina_links_ferramentas()
 
     # ======================
-    # ======================
     # ENTREGA VEICULOS QA
     # ======================
     elif pagina == "ENTREGA VEICULOS QA":
@@ -1535,41 +1534,50 @@ def painel():
 
         import plotly.graph_objects as go
 
-        try:
-            df = pd.read_csv("dados_rodagem.csv")
+        # ------------------------------------------------------
+        # Carrega os dados 1x para o session_state. Depois disso,
+        # o gráfico lê/edita sempre a partir da sessão — o CSV só
+        # é reaberto se ainda não existir "df_rodagem" na sessão.
+        # ------------------------------------------------------
+        if "df_rodagem" not in st.session_state:
+            try:
+                df_inicial = pd.read_csv("dados_rodagem.csv")
+                df_inicial.columns = df_inicial.columns.str.strip()
+                df_inicial.columns = ["Mes", "Prevista", "Liberados"]
+            except FileNotFoundError:
+                st.error("Arquivo dados_rodagem.csv não encontrado.")
+                df_inicial = pd.DataFrame({"Mes": [], "Prevista": [], "Liberados": []})
 
-        except FileNotFoundError:
-            st.error("Arquivo dados_rodagem.csv não encontrado.")
-            return
+            st.session_state.df_rodagem = df_inicial
 
-        df.columns = df.columns.str.strip()
-        df.columns = ["Mes", "Prevista", "Liberados"]
+        df = st.session_state.df_rodagem
 
-# ======================================================
-# EDIÇÃO DOS DADOS NO PAINEL
-# ======================================================
+        # ======================================================
+        # EDIÇÃO DOS DADOS NO PAINEL
+        # ======================================================
+        if st.session_state.usuario == "admin":
+            with st.expander("✏️ Editar dados da rodagem", expanded=False):
+                df_editado = st.data_editor(
+                    df,
+                    use_container_width=True,
+                    hide_index=True,
+                    num_rows="dynamic",  # permite adicionar/remover meses direto na tabela
+                    key="editor_rodagem"
+                )
 
-if st.session_state.usuario == "admin":
+                col_a, col_b = st.columns(2)
 
-    with st.expander("✏️ Editar dados da rodagem"):
+                if col_a.button("🔄 Atualizar gráfico", use_container_width=True):
+                    st.session_state.df_rodagem = df_editado
+                    st.rerun()
 
-        df_editado = st.data_editor(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            num_rows="fixed"
-        )
+                if col_b.button("💾 Atualizar + salvar no CSV", use_container_width=True):
+                    df_editado.to_csv("dados_rodagem.csv", index=False)
+                    st.session_state.df_rodagem = df_editado
+                    st.success("Dados atualizados!")
+                    st.rerun()
 
-        if st.button("💾 Salvar Dados"):
-            df_editado.to_csv(
-                "dados_rodagem.csv",
-                index=False
-            )
-
-            st.success("Dados atualizados!")
-
-            df = df_editado.copy()
-
+        df = st.session_state.df_rodagem
 
         meses = df["Mes"].tolist()
         prevista = [int(v) if pd.notna(v) else None for v in df["Prevista"]]
@@ -1693,7 +1701,6 @@ if st.session_state.usuario == "admin":
                 "🎯 % Liberação",
                 f"{percentual:.1f}%"
             )
-
 
     # ======================
     # GMP21
