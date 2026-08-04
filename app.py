@@ -10,7 +10,7 @@ import re
 from openai import AzureOpenAI
 from openpyxl import load_workbook
 import pdfplumber
-
+import requests
 
 # ======================================================
 # CONFIGURAÇÃO DA PÁGINA
