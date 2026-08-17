@@ -1701,6 +1701,80 @@ def painel():
                 "🎯 % Liberação",
                 f"{percentual:.1f}%"
             )
+import plotly.graph_objects as go
+
+fig_export = go.Figure()
+
+fig_export.add_trace(
+    go.Bar(
+        name="Rodagem Prevista",
+        x=meses,
+        y=prevista,
+        marker_color="#0D4671"
+    )
+)
+
+fig_export.add_trace(
+    go.Bar(
+        name="Veículos Liberados",
+        x=meses,
+        y=liberados,
+        marker_color="#00B0F0"
+    )
+)
+
+fig_export.update_layout(
+    title="🚗 Status Liberações ZP8",
+    barmode="group",
+    width=1800,
+    height=800
+)
+fig_export.add_annotation(
+    x=1.15,
+    y=0.85,
+    xref="paper",
+    yref="paper",
+    text=f"<b>🚗 Prevista</b><br>{total_prevista}",
+    showarrow=False,
+    bgcolor="white",
+    bordercolor="#DCE1E8",
+    borderwidth=1
+)
+
+fig_export.add_annotation(
+    x=1.15,
+    y=0.55,
+    xref="paper",
+    yref="paper",
+    text=f"<b>✅ Liberados</b><br>{total_liberados}",
+    showarrow=False,
+    bgcolor="white",
+    bordercolor="#DCE1E8",
+    borderwidth=1
+)
+
+fig_export.add_annotation(
+    x=1.15,
+    y=0.25,
+    xref="paper",
+    yref="paper",
+    text=f"<b>🎯 % Liberação</b><br>{percentual:.1f}%",
+    showarrow=False,
+    bgcolor="white",
+    bordercolor="#DCE1E8",
+    borderwidth=1
+)
+fig_export.write_image(
+2
+r"C:\Users\Lucas\OneDrive - Volkswagen AG\ZP8\Status_ZP8_Atual.png",
+3
+width=1800,
+4
+height=800,
+5
+scale=2
+6
+)
 
     # ======================
     # GMP21
